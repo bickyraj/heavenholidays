@@ -168,6 +168,7 @@ return [
         /*
          * Package Service Providers...
          */
+        Bickyraj\Hbl\HblServiceProvider::class,
 
         /*
          * Application Service Providers...

@@ -22,6 +22,8 @@ class CreateInvoicesTable extends Migration
             $table->string('trip_name', 191)->nullable();
             $table->string('amount', 191)->nullable();
             $table->string('price', 191)->nullable();
+            $table->bigInteger('ref_id');
+            $table->tinyInteger('status')->default('2');
             $table->timestamps();
         });
     }

@@ -33,7 +33,7 @@
     <div class="container">
         <div class="grid lg:grid-cols-3 xl:grid-cols-4 gap-4 xl:gap-3">
             <div class="lg:col-span-2 xl:col-span-3">
-                <form id="captcha-form" action="{{ route('front.trips.booking.store') }}" method="POST">
+                <form id="captcha-form" action="{{ route('front.store_payment') }}" method="POST">
                     @csrf
                     <input type="hidden" name="id" value="{{ $trip->id }}">
                     <h2 class="fs-lg bold text-primary mb-2" style="font-size: 30px; padding: 20px 0px; font-weight: 800;">Personal details</h2>
@@ -129,7 +129,7 @@
     }
 
     if (session_error_message) {
-      toastr.danger(session_error_message);
+      toastr.error(session_error_message);
     }
   });
 </script>

@@ -877,7 +877,7 @@ window.onload = function() {
   }
 
   if (session_error_message) {
-    toastr.danger(session_error_message);
+    toastr.error(session_error_message);
   }
 
   // Hero Slider

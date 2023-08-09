@@ -217,6 +217,20 @@ Route::get('/system-clear-cache', function() {
     return "Cache is cleared";
 });
 
+Route::get('/payment/hbl/callback/{invoceId}', 'Front\PaymentController@callbackPayment')->name('front.payment.callback');
+Route::get('/payment', 'Front\HomeController@payment')->name('front.payment');
+Route::post('/payment', 'Front\HomeController@storePayment')->name('front.store_payment');
+Route::post('/payment/callback', 'Front\HomeController@callbackPayment')->name('front.home.payment.callback');
+Route::get('/redeem-payment/{id}', 'Front\HomeController@redeemPayment')->name('front.redeem_payment');
+
+Route::get('/hbl', 'Front\HomeController@index')->name('hbl.index');
+Route::post('/hbl/payment-request', 'Front\HomeController@paymentRequest')->name('hbl.paymentrequest');
+Route::get('/hbl/payment/success', 'Front\HomeController@paymentSuccess')->name('hbl.payment.success');
+Route::get('/hbl/payment/canceled', 'Front\HomeController@paymentCanceled')->name('hbl.payment.canceled');
+Route::get('/hbl/payment/failed', 'Front\HomeController@paymentFailed')->name('hbl.payment.failed');
+
+Route::get('/make-a-payment', 'Front\HomeController@makePayment')->name('front.makeapayment');
+
 Route::post('/subscribe', 'Front\EmailSubscriberController@store')->name('front.email-subscribers.store');
 Route::get('/blogs', 'Front\BlogController@index')->name('front.blogs.index');
 Route::get('/gallery', 'Front\TripController@allTripGallery')->name('front.trips.all-gallery');

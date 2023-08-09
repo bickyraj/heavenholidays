@@ -71,8 +71,8 @@
             <aside>
                 <a href="{{ route('front.reviews.create') }}" class="mb-4 btn btn-accent">Write a review</a>
                  <div class="mb-8">
-                    
-       
+
+
                 </div>
                 @include('front.elements.enquiry')
             </aside>
@@ -91,7 +91,7 @@
         }
 
         if (session_error_message) {
-          toastr.danger(session_error_message);
+          toastr.error(session_error_message);
         }
 
         var enquiry_validator = $("#enquiry-form").validate({

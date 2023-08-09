@@ -1,3 +1,14 @@
+<?php
+  if (session()->has('success_message')) {
+    $session_success_message = session('success_message');
+    session()->forget('success_message');
+  }
+
+  if (session()->has('error_message')) {
+    $session_error_message = session('error_message');
+    session()->forget('error_message');
+  }
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -134,7 +145,19 @@
         })
         headerScrollObserver.observe(document.querySelector('#topIO'))
     </script>
+    <script>
+        $(function() {
+            var session_success_message = '{{ $session_success_message ?? '' }}';
+            var session_error_message = '{{ $session_error_message ?? '' }}';
+            if (session_success_message) {
+                toastr.success(session_success_message);
+            }
 
+            if (session_error_message) {
+                toastr.error(session_error_message);
+            }
+        });
+    </script>
 
 
 </body>
