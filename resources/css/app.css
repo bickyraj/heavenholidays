@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 tracking-widest uppercase;
+}
+
+.btn:active {
+    @apply scale-[.98];
+}
+
+.btn-primary {
+    @apply text-white transition-colors bg-primary;
+}
+
+.btn-primary:hover {
+    @apply bg-primary-d;
+}
+
+.btn-accent {
+    @apply text-gray-600 bg-accent;
+}
+
+.btn-accent:hover {
+    @apply bg-accent-d;
+}
