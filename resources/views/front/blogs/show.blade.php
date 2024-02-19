@@ -1,12 +1,17 @@
-@extends('layouts.front_blog')
+@extends('layouts.front_inner')
+@section('meta_og_title'){!! $blog->seo->meta_title ?? '' !!}@stop
+@section('meta_description'){!! $blog->seo->meta_description ?? '' !!}@stop
+@section('meta_keywords'){!! $blog->seo->meta_keywords ?? '' !!}@stop
+@section('meta_og_url'){!! $blog->seo->canonical_url ?? '' !!}@stop
+@section('meta_og_description'){!! $blog->seo->meta_description ?? '' !!}@stop
+@section('meta_og_image'){!! $blog->seo->ogImageUrl ?? '' !!}@stop
 @section('content')
     <!-- Hero -->
     <section class="relative hero hero-alt">
-        {{-- <img src="{{ asset('assets/front/img/hero.jpg') }}" alt=""> --}}
         <img src="{{ $blog->imageUrl }}" alt="">
         <div class="absolute overlay">
-            <div class="container">
-                <h1 class="drop-shadow-md font-display">{{ $blog->name }}</h1>
+            <div class="container ">
+                <h1 style="font-size: calc(2vw + 1rem);">{{ $blog->name }}</h1>
                 <div class="breadcrumb-wrapper">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb fs-sm wrap">
@@ -19,42 +24,58 @@
             </div>
     </section>
 
-    <section class="py-20 mb-4 tour-details">
-        <div class="max-w-5xl px-4 mx-auto mt-2">
-            <div class="prose tour-details-section prose-headings:text-primary">
-                {!! $blog->description !!}
+    @if ($contents)
+        <section class="container grid gap-10 py-20 lg:grid-cols-3">
+            <div>
+                <div class="sticky top-32 bg-gray p-4">
+                    <h2 class="mb-4 text-primary">Table of Contents</h2>
+                    <div class="prose prose-a:no-underline prose-li:list-none">
+                        {!! $contents !!}
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-2">
+                <div class="prose prose-headings:text-primary" style="max-width: 90ch;">
+                    {!! $body !!}
+                </div>
+            </div>
+        </section>
+    @else
+        <div class="container py-20">
+            <div class="mx-auto prose">
+                {!! $blog->toc !!}
             </div>
         </div>
-    </section>
+    @endif
 
-    <!-- Latest News -->
-    <section class="mb-20 news">
-        <div class="container">
-
-            <div class="grid gap-2 lg:grid-cols-3 xl:gap-3">
-                @forelse ($blogs as $blog)
-                    <a href="{{ route('front.blogs.show', $blog->slug) }}">
-                        <div class="article">
-                            <div class="image">
-                                <img src="{{ $blog->imageUrl }}" alt="{{ $blog->name }}" class="lazyload" title="{{ $blog->name }}" width="300" height="200">
-                            </div>
-                            <div class="content">
-                                <h2 class="text-xl font-bold text-gray-700 hover:text-primary">{{ $blog->name }}</h2>
-                                <div class="flex items-center mt-4 text-xs text-gray-400"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    {{ formatDate($blog->blog_date) }}
+    <!-- similar blogs -->
+    @if (isset($blog->similar_blogs) && !empty($blog->similar_blogs))
+        <section class="mt-20 mb-5 bg-gray-100 news">
+            <div class="container">
+                <h2 class="relative pt-10 pb-10 pr-10 text-3xl font-bold text-gray-600 uppercase lg:text-5xl font-display">Latest Travel Blogs</h2>
+                <div class="absolute right-0 w-6 h-1 rounded top-1/2 bg-accent"></div>
+                <div class="grid gap-2 lg:grid-cols-3 xl:gap-3">
+                    @foreach ($blog->similar_blogs as $s_blog)
+                        <a href="{{ route('front.blogs.show', $s_blog->slug) }}">
+                            <div>
+                                <div class="relative">
+                                    <img src="{{ $s_blog->mediumImageUrl }}" alt="{{ $s_blog->image_alt }}" class="w-full h-auto rounded-lg" width="615" height="462" loading="lazy">
+                                    <div class="absolute bottom-0 px-2 text-center text-white bg-accent left-4" style="bottom:0; left:1rem;">
+                                        <div class="text-sm">{{ date('M', strtotime($s_blog->blog_date)) }}</div>
+                                        <div class="text-lg font-bold">{{ date('j', strtotime($s_blog->blog_date)) }}</div>
+                                    </div>
                                 </div>
-                                <p class="mt-1">
-                                    {{ truncate(strip_tags($blog->description)) }}
-                                </p>
+                                <div class="mt-6">
+                                    <h3 class="text-xl font-bold text-gray-600">{{ $s_blog->name }}</h3>
+                                    <p class="mt-2 text-gray-600">
+                                        {{ truncate(strip_tags($s_blog->description)) }}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                    </a>
-                @empty
-                @endforelse
+                        </a>
+                    @endforeach
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+    @endif
 @endsection

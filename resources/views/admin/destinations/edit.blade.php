@@ -66,6 +66,21 @@
                               <div id="summernote-description" class="summernote">
                               </div>
                           </div>
+                          <div class="form-group">
+                              <label>Tour Guide Description</label>
+                              <div id="summernote-tour-guide-description" class="summernote">
+                              </div>
+                          </div>
+                          <div class="form-group">
+                              <label>Tour Guide Image</label>
+                              @if (!empty($destination->tour_guide_image_name))
+                                <input type="hidden" id="existing-tour-guide-image-status" value="1" name="has_tour_guide_image">
+                                <div id="tour-guide-image-name-block">
+                                    <p><span id="tour-guide-image-name">{{ $destination->tour_guide_image_name }}</span><button id="remove-tour-guide-image-name-file-btn" class="btn btn-sm text-danger"><i class="fa fa-times"></i></button></p>
+                                </div>
+                              @endif
+                              <input type="file" id="tour-guide-image" class="form-control">
+                          </div>
                         </div>
                         {{-- end of general tab --}}
                         {{-- seo tab --}}
@@ -140,17 +155,28 @@
 <script src="./assets/vendors/jquery-validation/dist/jquery.validate.min.js"></script>
 <script type="text/javascript">
 $(function() {
+
+    $("#remove-tour-guide-image-name-file-btn").on('click', function(event) {
+      event.preventDefault();
+      $("#remove-tour-guide-image-name").val('');
+      $("#tour-guide-image-name-block").hide();
+      $("#existing-tour-guide-image-status").val('0');
+    });
   function initSummerNote() {
     $('#summernote-description').summernote({
       height: 400
     });
+    $('#summernote-tour-guide-description').summernote({
+      height: 400
+    });
     $('#summernote-description').summernote("code", `<?= $destination->description; ?>`);
+    $('#summernote-tour-guide-description').summernote("code", `<?= $destination->tour_guide_description; ?>`);
   }
 	$("#add-form-page").validate({
 		submitHandler: function(form, event) {
-      event.preventDefault();
-      var btn = $(form).find('button[type=submit]').attr('disabled', true).html('Publishing...');
-      handleDestinationForm(form);
+        event.preventDefault();
+        var btn = $(form).find('button[type=submit]').attr('disabled', true).html('Publishing...');
+        handleDestinationForm(form);
 	  }
 	});
 	var cropped = false;
@@ -161,10 +187,19 @@ $(function() {
     var form = $(form);
     var formData = new FormData(form[0]);
     var description = form.find('#summernote-description').summernote('code');
+    var tour_guide_description = form.find('#summernote-tour-guide-description').summernote('code');
     formData.append('description', description);
+    formData.append('tour_guide_description', tour_guide_description);
     if (cropper) {
       formData.append('cropped_data', JSON.stringify(cropper.getData()));
     }
+
+    const fileInput = $('#tour-guide-image');
+    var file = fileInput[0].files[0];
+    if (!file || file == undefined) {
+        file = "";
+    }
+    formData.append('tour_guide_image_name', file);
 
     $.ajax({
         url: "{{ route('admin.destinations.update') }}",
@@ -177,7 +212,7 @@ $(function() {
         success: function(res) {
             if (res.status === 1) {
                 // toastr.success(res.message);
-                location.href = '{{ route('admin.destinations.index') }}';
+                location.href = "{{ route('admin.destinations.index') }}";
                 // form[0].reset();
                 // $('#cropper-image').attr('src', '{{ asset('img/default.gif') }}');
                 // if (cropped) {

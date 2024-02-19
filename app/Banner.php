@@ -18,6 +18,15 @@ class Banner extends Model
         }
         return config('constants.default_image_url');
     }
+    
+    public function getLargeImageUrlAttribute()
+	{
+	    if (isset($this->attributes['image_name']) && !empty($this->attributes['image_name']) && \Storage::exists('public/trip-galleries/'. $this->attributes['id']. '/large_' . $this->attributes['image_name'])) {
+	        $image_url = url('/storage/banners');
+	    	return $image_url . '/' . $this->attributes['id'] . '/large_' . $this->attributes['image_name'];
+	    }
+	    return $this->getImageUrlAttribute();
+	}
 
     public function getThumbImageUrlAttribute()
     {

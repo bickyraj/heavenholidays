@@ -5,7 +5,7 @@
 <link href="./assets/vendors/bootstrap-rating-master/bootstrap-rating.css" rel="stylesheet">
 @endpush
 @section('content')
-<div class="kt-container  kt-container--fluid  kt-grid__item kt-grid__item--fluid">
+<div class="kt-container kt-container--fluid kt-grid__item kt-grid__item--fluid">
     <div class="row">
         <div class="col">
             <!--begin::Portlet-->
@@ -19,7 +19,7 @@
                               Edit Trip
                           </h3>
                       </div>
-                      <div class="kt-form__actions mt-3">
+                      <div class="mt-3 kt-form__actions">
                           <a href="{{ route('admin.trips.index') }}" class="btn btn-sm btn-secondary">Cancel</a>
                       </div>
                   </div>
@@ -54,6 +54,16 @@
                           <li class="nav-item">
                               <a class="nav-link" data-toggle="tab" href="#kt_tabs_1_6">
                                   <i class="la la-file-image-o"></i> Sliders
+                              </a>
+                          </li>
+                          <li class="nav-item">
+                              <a class="nav-link" data-toggle="tab" href="#kt_tabs_1_7">
+                                  <i class="la la-file-image-o"></i> Gallery
+                              </a>
+                          </li>
+                          <li class="nav-item">
+                              <a class="nav-link" data-toggle="tab" href="#kt_tabs_1_8">
+                                  <i class="la la-file-image-o"></i> Trip Price Range
                               </a>
                           </li>
                       </ul>
@@ -151,7 +161,7 @@
                               <div class="form-group row">
                                 <label class="col-lg-2 col-form-label">Ending Point</label>
                                 <div class="col-lg-7">
-                                  <input type="text" class="form-control form-control-sm" value="{{ $trip->ending_point }}" name="ending_point">
+                                  <input type="text" class="form-control form-control-sm" value="{{ $trip->ending_pointam }}" name="ending_point">
                                   {{-- <span class="form-text text-muted">Please enter your full name</span> --}}
                                 </div>
                               </div>
@@ -197,33 +207,37 @@
                               <hr>
                               <div class="form-group">
                                 <label >Choose Similar Trips</label>
-                                <div class="kt-checkbox-list">
-                                  @if(iterator_count($trips))
-                                    @foreach($trips as $item_trip)
-                                    <label class="kt-checkbox kt-checkbox--brand">
-                                      <input type="checkbox" name="similar_trips[]" <?php echo ((in_array($item_trip->id, $similar_trip_ids)?'checked': '')); ?> value="{{ $item_trip->id }}"> {{ $item_trip->name }}
-                                      <span></span>
-                                    </label>
-                                    @endforeach
-                                  @else
-                                    <p>No trips added.</p>
-                                  @endif
+                                <div style="max-height: 20rem; overflow-y:auto;">
+                                  <div class="kt-checkbox-list" style="columns: 2">
+                                    @if(iterator_count($trips))
+                                      @foreach($trips as $item_trip)
+                                      <label class="kt-checkbox kt-checkbox--brand">
+                                        <input type="checkbox" name="similar_trips[]" <?php echo ((in_array($item_trip->id, $similar_trip_ids)?'checked': '')); ?> value="{{ $item_trip->id }}"> {{ $item_trip->name }}
+                                        <span></span>
+                                      </label>
+                                      @endforeach
+                                    @else
+                                      <p>No trips added.</p>
+                                    @endif
+                                  </div>
                                 </div>
                               </div>
                               <hr>
                               <div class="form-group">
                                 <label >Choose Addon Trips</label>
-                                <div class="kt-checkbox-list">
-                                  @if(iterator_count($trips))
-                                    @foreach($trips as $item_trip)
-                                    <label class="kt-checkbox kt-checkbox--brand">
-                                      <input type="checkbox" name="addon_trips[]" <?php echo ((in_array($item_trip->id, $addon_trip_ids)?'checked': '')); ?> value="{{ $item_trip->id }}"> {{ $item_trip->name }}
-                                      <span></span>
-                                    </label>
-                                    @endforeach
-                                  @else
-                                    <p>No trips added.</p>
-                                  @endif
+                                <div style="max-height: 20rem; overflow-y:auto;">
+                                  <div class="kt-checkbox-list" style="columns: 2">
+                                    @if(iterator_count($trips))
+                                      @foreach($trips as $item_trip)
+                                      <label class="kt-checkbox kt-checkbox--brand">
+                                        <input type="checkbox" name="addon_trips[]" <?php echo ((in_array($item_trip->id, $addon_trip_ids)?'checked': '')); ?> value="{{ $item_trip->id }}"> {{ $item_trip->name }}
+                                        <span></span>
+                                      </label>
+                                      @endforeach
+                                    @else
+                                      <p>No trips added.</p>
+                                    @endif
+                                  </div>
                                 </div>
                               </div>
                               <hr>
@@ -237,10 +251,16 @@
                                     <button type="button" class="btn btn-sm btn-secondary btn-wide" onclick="document.getElementById('map_file').click();"> Upload Map Image
                                     </button>
                                   </div>
-                                  <input type="hidden" name="has_map_file" id="has_map_file" value="{{ ($trip->pdf_original_file_name)?1:0 }}">
+                                  <input type="hidden" name="has_map_file" id="has_map_file" value="{{ ($trip->map_original_file_name)?1:0 }}">
                                   <input type="file" style="display: none;" id="map_file" class="form-control form-control-sm" name="map_file_name">
                                 </div>
                               </div>
+                                <div class="form-group row">
+                                    <label class="col-lg-2 col-form-label">Map Iframe</label>
+                                    <div class="col-lg-7">
+                                        <textarea class="form-control form-control-sm" name="iframe" id="" cols="30" rows="10">{{ $trip->iframe }}</textarea>
+                                    </div>
+                                </div>
                               <hr>
                               <div class="form-group row">
                                 <label class="col-lg-2 col-form-label">PDF File</label>
@@ -367,7 +387,7 @@
                               </div>
                               <hr>
                               <div class="form-group">
-                                <label class="form-label">Equipment Checklist</label>
+                                <label class="form-label">Complimentary</label>
                                 <div id="summernote-complimentary" class="summernote">
                                   <?= (($trip->trip_include_exclude)?$trip->trip_include_exclude->complimentary:''); ?>
                                 </div>
@@ -431,7 +451,8 @@
                               </div>
 
                               <div class="form-group row">
-                                <label class="col-lg-2 col-form-label">About Leader</label>
+                                {{-- originally about leader --}}
+                                <label class="col-lg-2 col-form-label">Equipment List</label>
                                 <div class="col-lg-7">
                                   <div id="summernote-leader" class="summernote">
                                     <?= (($trip->trip_seo)?$trip->trip_seo->about_leader:''); ?>
@@ -455,8 +476,8 @@
                               {{ csrf_field() }}
                               <input type="hidden" name="id" value="{{ $trip->id }}">
                               <div class="row">
-                                <div class="col-lg-9 mb-5">
-                                  <div class="row mb-3">
+                                <div class="mb-5 col-lg-9">
+                                  <div class="mb-3 row">
                                     <div class="col">
                                       <button id="add-itinerary-btn" class="btn btn-sm btn-outline-brand pull-right"><i class="flaticon2-plus"></i> Add Itinerary</button>
                                     </div>
@@ -478,7 +499,7 @@
                             </form>
                           </div>
 
-                          {{-- Galleries --}}
+                          {{-- sliders --}}
                           <div class="tab-pane" data-index="6" id="kt_tabs_1_6" role="tabpanel">
                             <div class="mb-3">
                               <button type="button" class="btn btn-bold btn-label-brand btn-sm pull-right" data-backdrop="static" data-toggle="modal" data-target="#kt_modal_4">Add Image</button>
@@ -502,10 +523,48 @@
                                         <td>{!! $gallery->caption? $gallery->caption:'--' !!}</td>
                                         <td>{!! $gallery->alt_tag? $gallery->alt_tag:'--' !!}</td>
                                         <td>
-                                            <a href="{{ route('admin.trips.slider.edit', ['sliderId' => $gallery->id]) }}" class="btn btn-sm btn-clean btn-icon btn-icon-md" title="Edit Image">
+                                            <a href="{{ route('admin.trips.slider.edit', $gallery->id) }}" class="btn btn-sm btn-clean btn-icon btn-icon-md" title="Edit details">
                                                 <i class="la la-edit"></i>
                                             </a>
                                           <button class="btn btn-sm btn-clean btn-icon btn-icon-md kt_sweetalert_delete_image" data-id="{{ $gallery->id }}" title="Delete">
+                                            <i class="la la-trash"></i>
+                                          </button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                  @else
+                                  <tr>
+                                      <td colspan="5">No sliders.</td>
+                                  </tr>
+                                  @endif
+                                </tbody>
+                            </table>
+                          </div>
+
+                          {{-- gallery --}}
+                          <div class="tab-pane" data-index="7" id="kt_tabs_1_7" role="tabpanel">
+                            <div class="mb-3">
+                              <button type="button" class="btn btn-bold btn-label-brand btn-sm pull-right" data-backdrop="static" data-toggle="modal" data-target="#kt_modal_5">Add Image</button>
+                            </div>
+                            <table id="gallery-table" class="table table-striped">
+                                <thead>
+                                  <tr>
+                                      <th>#</th>
+                                      <th>Image</th>
+                                      <th>Action</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  @if(iterator_count($trip->trip_sliders))
+                                    @foreach($trip->trip_sliders as $key => $slider)
+                                    <tr>
+                                        <th scope="row">{{ $key + 1 }}</th>
+                                        <td><img class="tbl-img" width="100" style="width: 200px;" src="{{ $slider->imageUrl }}"></td>
+                                        <td>
+                                            <a href="{{ route('admin.trips.gallery.edit', $slider->id) }}" class="btn btn-sm btn-clean btn-icon btn-icon-md" title="Edit details">
+                                                <i class="la la-edit"></i>
+                                            </a>
+                                          <button class="btn btn-sm btn-clean btn-icon btn-icon-md kt_sweetalert_delete_image_slider" data-id="{{ $slider->id }}" title="Delete">
                                             <i class="la la-trash"></i>
                                           </button>
                                         </td>
@@ -518,6 +577,103 @@
                                   @endif
                                 </tbody>
                             </table>
+                          </div>
+
+                          <div class="tab-pane" data-index="8" id="kt_tabs_1_8" role="tabpanel">
+                            <form class="kt-form" id="edit-trip-price-range-form" enctype="multipart/form-data">
+                                {{ csrf_field() }}
+                                <div class="kt-portlet__body">
+                                    <input type="hidden" name="trip_id" value="{{ $trip->id }}">
+                                    <div id="trip-date-block">
+                                        @if ($trip->people_price_range != null)
+                                            @forelse ($trip->people_price_range as $key => $trip_price_range)
+                                                <div data-repeater-item="" class="form-group row trip-departure-date-block">
+                                                    <div class="col-md-3">
+                                                        <div class="kt-form__group--inline">
+                                                            <div class="kt-form__label">
+                                                                <label>From</label>
+                                                            </div>
+                                                            <div class="kt-form__control">
+                                                                <input name="trip_price_range[{{ $key }}][from]" class="form-control" aria-describedby="" type="text" value="{{ $trip_price_range['from'] }}" placeholder="" required="required">
+                                                            </div>
+                                                        </div>
+                                                        <div class="d-md-none kt-margin-b-10"></div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="kt-form__group--inline">
+                                                            <div class="kt-form__label">
+                                                                <label class="kt-label m-label--single">To</label>
+                                                            </div>
+                                                            <div class="kt-form__control">
+                                                                <input type="text" name="trip_price_range[{{ $key }}][to]" class="form-control" aria-describedby="" value="{{ $trip_price_range['to'] }}" placeholder="" required="required">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="kt-form__group--inline">
+                                                            <div class="kt-form__label">
+                                                                <label class="kt-label m-label--single">Price</label>
+                                                            </div>
+                                                            <div class="kt-form__control">
+                                                                <input type="number" min="0" value="{{ $trip_price_range['price'] }}" name="trip_price_range[{{ $key }}][price]" class="form-control" aria-describedby="" placeholder="" required="required">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    @if($key > 0)
+                                                    <button class="btn btn-sm btn-light btn-departure-date-remove" title="remove"><i class="fas fa-times"></i></button>
+                                                    @endif
+                                                </div>
+                                            @empty
+
+                                            @endforelse
+                                        @else
+                                                <div data-repeater-item="" class="form-group row trip-departure-date-block">
+                                                    <div class="col-md-3">
+                                                        <div class="kt-form__group--inline">
+                                                            <div class="kt-form__label">
+                                                                <label>From</label>
+                                                            </div>
+                                                            <div class="kt-form__control">
+                                                                <input name="trip_price_range[0][from]" class="form-control" aria-describedby="" type="text" value="" placeholder="" required="required">
+                                                            </div>
+                                                        </div>
+                                                        <div class="d-md-none kt-margin-b-10"></div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="kt-form__group--inline">
+                                                            <div class="kt-form__label">
+                                                                <label class="kt-label m-label--single">To</label>
+                                                            </div>
+                                                            <div class="kt-form__control">
+                                                                <input type="text" name="trip_price_range[0][to]" class="form-control" aria-describedby="" value="" placeholder="" required="required">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="kt-form__group--inline">
+                                                            <div class="kt-form__label">
+                                                                <label class="kt-label m-label--single">Price</label>
+                                                            </div>
+                                                            <div class="kt-form__control">
+                                                                <input type="number" min="0" value="" name="trip_price_range[0][price]" class="form-control" aria-describedby="" placeholder="" required="required">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button class="btn btn-sm btn-light btn-departure-date-remove" title="remove"><i class="fas fa-times"></i></button>
+                                                </div>
+                                        @endif
+                                    </div>
+                                    <button type="button" id="trip-date-add-btn" class="btn btn-sm btn-success btn-elevate btn-circle btn-icon pull-right" style="align-self: flex-end;"><i class="fas fa-plus"></i></button>
+                                </div>
+                                <div class="kt-portlet__foot">
+                                    <div class="kt-form__actions">
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                        <i class="flaticon2-check-mark"></i>
+                                        Update
+                                    </button>
+                                    </div>
+                                </div>
+                            </form>
                           </div>
                       </div>
                   </div>
@@ -560,6 +716,7 @@
                             <img id="cropper-image" class="crop-img-div" src="{{ asset('img/default.gif') }}">
                         </div>
                         <input type="file" name="file" style="display: block;" accept="image/x-png,image/gif,image/jpeg" id="cropper-upload">
+                        <span>Recommended size: 1800x800</span>
                       </div>
                     </div>
                 </div>
@@ -581,6 +738,41 @@
     </div>
 </div>
 <!--end::Modal-->
+
+{{-- gallery --}}
+<div class="modal fade" id="kt_modal_5" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add Gallery</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                </button>
+            </div>
+            <form class="kt-form" id="add-image-gallery" enctype="multipart/form-data">
+              {{ csrf_field() }}
+              <div class="modal-body">
+                <input type="hidden" name="trip_id" value="{{ $trip->id }}">
+                <div class="form-group">
+                    <label for="">Gallery</label>
+                    <div class="row">
+                      <div class="col-lg-7">
+                        <input type="file" name="gallery" style="display: block;" accept="image/x-png,image/gif,image/jpeg" id="">
+                      </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="recipient-name" class="form-control-label">Alt Tag</label>
+                    <input type="text" name="alt_tag" class="form-control">
+                </div>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  <button type="submit" class="btn btn-primary">Upload</button>
+              </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 @push('scripts')
 <script src="./assets/vendors/general/summernote/dist/summernote.js" type="text/javascript"></script>
@@ -590,6 +782,7 @@
 <script src="./assets/vendors/jquery-validation/dist/additional-methods.min.js"></script>
 <script src="./assets/vendors/bootstrap-rating-master/bootstrap-rating.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="{{ asset('assets/js/description-image.js') }}" data-id="description-image" data-delete-url="{{ route('admin.description.delete.image') }}" data-save-url="{{ route('admin.description.save.image') }}"></script>
 <script type="text/javascript">
 $(function() {
   $("#trip-rating").rating();
@@ -672,7 +865,7 @@ $(function() {
     var div = '\
     <div class="form-group itinerary-group">\
       <div class="kt-timeline-v2 travel-timeline">\
-          <div class="kt-timeline-v2__items  kt-padding-top-25 kt-padding-bottom-30">\
+          <div class="kt-timeline-v2__items kt-padding-top-25 kt-padding-bottom-30">\
               <div class="kt-timeline-v2__item">\
                   <span class="kt-timeline-v2__item-time">Day <span class="day-number"><input type="number" required class="form-control form-control-sm" style="width: 83px;"></span></span>\
                   <div class="kt-timeline-v2__item-cricle">\
@@ -682,12 +875,17 @@ $(function() {
                     <div class="itinerary-block-action">\
                       <div>\
                         <button type="button" title="remove" class="btn btn-outline-danger btn-sm btn-elevate-hover btn-icon pull-right remove-itinerary"><i class="fa fa-times"></i></button>\
-                          <div title="move" class="btn btn-outline-brand btn-sm btn-elevate-hover btn-icon pull-right move-itinerary mr-1"><i class="la la-unsorted"></i></div>\
+                          <div title="move" class="mr-1 btn btn-outline-brand btn-sm btn-elevate-hover btn-icon pull-right move-itinerary"><i class="la la-unsorted"></i></div>\
                       </div>\
                     </div>\
-                    <input type="text" name="trip_itineraries[][name]" id="input-trip-name" class="form-control mb-3 form-control-sm" placeholder="Title">\
+                    <input type="text" name="trip_itineraries[][name]" id="input-trip-name" class="mb-3 form-control form-control-sm" placeholder="Title">\
+                    <input type="text" id="input-trip-max-altitude" class="mb-3 form-control form-control-sm" placeholder="Max altitude">\
+                    <input type="text" id="input-trip-accomodation" class="mb-3 form-control form-control-sm" placeholder="Accomodation">\
+                    <input type="text" id="input-trip-meals" class="mb-3 form-control form-control-sm" placeholder="Meals">\
+                    <input type="text" id="input-trip-hours" class="mb-3 form-control form-control-sm" placeholder="Hours">\
+                    <input type="file" id="input-trip-image" class="mb-3 form-control form-control-sm">\
                     <div class="itinerary-description-block">\
-                      <div id="summernote-itinerary-'+n+'" class="summernote"></div>\
+                      <div id="summernote-itinerary-'+n+'" class="summernote-itinerary"></div>\
                     </div>\
                   </div>\
               </div>\
@@ -698,16 +896,34 @@ $(function() {
 
     $("#itinerary-block").append(div);
     $('#summernote-itinerary-' + n).summernote({
-      height: 200
+      height: 200,
+      callbacks: {
+          onImageUpload: function(files, editor, welEditable) {
+              sendFile(files[0], this);
+          },
+          onMediaDelete : function(target) {
+              deleteFile(target[0].src);
+          }
+      }
     });
     $("#itinerary-block").attr('data-n', n);
     initItinerarySortable();
   });
 
   function initSummerNote() {
-    // $('#summernote-description').summernote({
-    //   height: 400
-    // });
+    $(".summernote-itinerary").each(function() {
+        $(this).summernote({
+            height: 200,
+            callbacks: {
+                onImageUpload: function(files, editor, welEditable) {
+                    sendFile(files[0], this);
+                },
+                onMediaDelete : function(target) {
+                    deleteFile(target[0].src);
+                }
+            }
+        });
+    });
     $('#summernote-accomodation').summernote();
     $('#summernote-meals').summernote();
     $('#summernote-transportation').summernote();
@@ -719,7 +935,13 @@ $(function() {
     $('#summernote-exclude').summernote();
     $('#summernote-complimentary').summernote();
 
-    $('#summernote-leader').summernote();
+    $('#summernote-leader').summernote({
+        toolbar: [
+          [['bold', 'underline', 'clear']],
+          ['para', ['ul', 'ol', 'paragraph']],
+          ['insert', ['link', 'picture', 'video']],
+        ]
+    });
   }
 
   initSummerNote();
@@ -938,11 +1160,27 @@ $(function() {
       var formData = new FormData(form[0]);
 
       $.each($("#itinerary-block>.itinerary-group"), function(i, v) {
-        var desc = $(v).find('.summernote').summernote('code');
+        var desc = $(v).find('.summernote-itinerary').summernote('code');
         var day = $(v).find('.day-number').find('input').val();
+        const max_altitude = $(v).find("#input-trip-max-altitude").val();
+        const accomodation = $(v).find("#input-trip-accomodation").val();
+        const meals = $(v).find("#input-trip-meals").val();
+        const hours = $(v).find("#input-trip-hours").val();
+        const fileInput = $(v).find('#input-trip-image');
+        const itinerary_id = $(v).find("#input-trip-itinerary-id").val();
+        var file = fileInput[0].files[0];
+        if (!file || file == undefined) {
+           file = "";
+        }
         formData.append('trip_itineraries['+i+'][day]', day);
         formData.append('trip_itineraries['+i+'][display_order]', i + 1);
         formData.append('trip_itineraries['+i+'][description]', desc);
+        formData.append('trip_itineraries['+i+'][max_altitude]', max_altitude);
+        formData.append('trip_itineraries['+i+'][accomodation]', accomodation);
+        formData.append('trip_itineraries['+i+'][meals]', meals);
+        formData.append('trip_itineraries['+i+'][hours]', hours);
+        formData.append('trip_itineraries['+i+'][itinerary_id]', itinerary_id);
+        formData.append('trip_itineraries['+i+'][image_name]', file);
       });
 
       $.ajax({
@@ -1045,6 +1283,25 @@ $(function() {
       }
     });
 
+    $("#add-image-gallery").validate({
+      ignore: "",
+      submitHandler: function(form, event) {
+        event.preventDefault();
+        handleTripGalleryForm(form);
+      },
+      rules: {
+        gallery: {
+          required: true,
+          extension: "jpeg|jpg|png|gif"
+        }
+      },
+      messages: {
+        gallery: {
+          extension: "Only image files is allowed."
+        }
+      }
+    });
+
     function handleTripImageImageForm(form) {
       var form = $(form);
       $(form).find('button[type=submit]').attr('disabled', true).html('Uploading...');
@@ -1066,6 +1323,28 @@ $(function() {
                 toastr.success(res.message);
                 loadGalleries();
                 resetAddImageForm();
+              }
+          }
+      });
+    }
+
+    function handleTripGalleryForm(form) {
+      var form = $(form);
+      $(form).find('button[type=submit]').attr('disabled', true).html('Uploading...');
+      var formData = new FormData(form[0]);
+
+      $.ajax({
+          url: "{{ route('admin.trips.sliders.store') }}",
+          type: 'POST',
+          data: formData,
+          dataType: 'json',
+          processData: false,
+          contentType: false,
+          async: false,
+          success: function(res) {
+              if (res.status === 1) {
+                toastr.success(res.message);
+                window.location.reload();
               }
           }
       });
@@ -1096,7 +1375,7 @@ $(function() {
     	}
 
 	    cropper = new Cropper(image, {
-	        aspectRatio: 3 / 2,
+	        // aspectRatio: 3/2,
 	        zoomable: false,
 	        viewMode: 2,
 	        crop(event) {
@@ -1179,8 +1458,117 @@ $(function() {
       });
     });
 
+    $(document).on('click', '.kt_sweetalert_delete_image_slider', function(event) {
+      var e = $(this);
+
+      swal.fire({
+          title: 'Are you sure you want to delete this?',
+          // text: "You won't be able to revert this!",
+          type: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes'
+      }).then(function(result) {
+          if (result.value) {
+            var id = e.attr('data-id');
+            var action_url = '{{ url('') }}' + '/admin/trip/slider/delete/' + id;
+            $.ajax({
+              url: action_url,
+              type: "DELETE",
+              dataType: "json",
+              async: "false",
+              success: function(res) {
+                Toast.fire({
+                  type: 'success',
+                  title: 'The image has been deleted.'
+                })
+                window.location.reload();
+              }
+            })
+          }
+      });
+    });
+
     initItinerarySortable();
 });
 
+</script>
+<script>
+    $(function() {
+        var people_price_range_count = {{ $trip->people_price_range != null ?count($trip->people_price_range) : 1 }};
+          $("#trip-date-add-btn").on('click', function(event) {
+            event.preventDefault();
+            people_price_range_count++;
+            var block = '<div data-repeater-item="" class="form-group row trip-departure-date-block">\
+                <div class="col-md-3">\
+                    <div class="kt-form__group--inline">\
+                        <div class="kt-form__label">\
+                            <label>From</label>\
+                        </div>\
+                        <div class="kt-form__control">\
+                        <input type="text" name="trip_price_range['+people_price_range_count+'][from]" class="form-control" aria-describedby="" placeholder="" required="required">\
+                        </div>\
+                    </div>\
+                    <div class="d-md-none kt-margin-b-10"></div>\
+                </div>\
+                <div class="col-md-3">\
+                    <div class="kt-form__group--inline">\
+                        <div class="kt-form__label">\
+                            <label class="kt-label m-label--single">To</label>\
+                        </div>\
+                        <div class="kt-form__control">\
+                        <input type="text" name="trip_price_range['+people_price_range_count+'][to]" class="form-control" aria-describedby="" placeholder="" required="required">\
+                        </div>\
+                    </div>\
+                </div>\
+                <div class="col-md-3">\
+                    <div class="kt-form__group--inline">\
+                        <div class="kt-form__label">\
+                            <label class="kt-label m-label--single">Price</label>\
+                        </div>\
+                        <div class="kt-form__control">\
+                        <input type="number" min="0" name="trip_price_range['+people_price_range_count+'][price]" class="form-control" aria-describedby="" placeholder="" required="required">\
+                        </div>\
+                    </div>\
+                </div>\
+                <button class="btn btn-sm btn-light btn-departure-date-remove" title="remove"><i class="fas fa-times"></i></button>\
+            </div>';
+
+            $("#trip-date-block").append(block);
+            // init_date_picker();
+        });
+
+        $(document).on('click', '.btn-departure-date-remove', function(event) {
+            event.preventDefault();
+            $(this).closest('.trip-departure-date-block').remove();
+        });
+
+        $("#edit-trip-price-range-form").validate({
+            submitHandler: function(form, event) {
+                event.preventDefault();
+                var btn = $(form).find('button[type=submit]').attr('disabled', true).html('Publishing...');
+                handleRegionForm(form);
+            }
+        });
+
+        function handleRegionForm(form) {
+            var form = $(form);
+            var formData = new FormData(form[0]);
+
+            $.ajax({
+                url: "{{ route('admin.trips.pricerange.update') }}",
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function(res) {
+                    if (res.status === 1) {
+                        location.href = `{{ route('admin.trips.index') }}`;
+                    }
+                }
+            });
+        }
+    });
 </script>
 @endpush

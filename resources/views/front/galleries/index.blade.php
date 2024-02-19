@@ -17,7 +17,7 @@
 
 <!-- Hero -->
 <section class="hero hero-alt relative">
-    <img src="{{ asset('assets/front/img/hero.jpg') }}" alt="">
+    <img src="{{ asset('assets/front/img/hero.jpg') }}" alt="" style="border-radius: 0px;height: 300px;">
     <div class="overlay absolute">
         <div class="container ">
             <h1 class="font-display upper">Gallery</h1>
@@ -70,7 +70,7 @@
         }
 
         if (session_error_message) {
-          toastr.error(session_error_message);
+          toastr.danger(session_error_message);
         }
 
         var enquiry_validator = $("#enquiry-form").validate({

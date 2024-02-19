@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title></title>
+	<title>Namaste Nepal</title>
 </head>
 <body>
 	<h3>Customized Trip</h3>

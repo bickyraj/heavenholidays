@@ -31,7 +31,7 @@ License: You must have a valid license purchased only from themeforest(the above
     <link href="./assets/vendors/general/perfect-scrollbar/css/perfect-scrollbar.css" rel="stylesheet" type="text/css" />
     <!--end:: Global Mandatory Vendors -->
     <!--begin:: Global Optional Vendors -->
-    
+
     <!--end:: Global Optional Vendors -->
     <!--begin::Global Theme Styles(used by all pages) -->
     <link href="./assets/css/demo1/style.bundle.css" rel="stylesheet" type="text/css" />

@@ -15,9 +15,18 @@
                     <div title="move" class="btn btn-outline-brand btn-sm btn-elevate-hover btn-icon pull-right move-itinerary mr-1"><i class="la la-unsorted"></i></div>
                   </div>
                 </div>
+                <input type="hidden" id="input-trip-itinerary-id" name="itinerary_id" value="{{ $itinerary->id }}">
                 <input type="text" name="trip_itineraries[][name]" id="input-trip-name" value="{{ $itinerary->name }}" class="form-control mb-3 form-control-sm" placeholder="Title">
+                {{-- max_altitude --}}
+                <input type="text" id="input-trip-max-altitude" value="{{ $itinerary->max_altitude }}" class="form-control mb-3 form-control-sm" placeholder="Max altitude">
+                {{-- accomodation --}}
+                <input type="text" id="input-trip-accomodation" value="{{ $itinerary->accomodation }}" class="form-control mb-3 form-control-sm" placeholder="Accomodation">
+                {{-- meals --}}
+                <input type="text" id="input-trip-meals" value="{{ $itinerary->meals }}" class="form-control mb-3 form-control-sm" placeholder="Meals">
+                {{-- image --}}
+                <input type="file" id="input-trip-image" name="itinerary_image" value="{{ $itinerary->image_name }}" class="form-control mb-3 form-control-sm">
                 <div class="itinerary-description-block">
-                  <div id="summernote-itinerary-{{ $itinerary->day }}" class="summernote"><?= $itinerary->description; ?></div>
+                  <div id="summernote-itinerary-{{ $itinerary->day }}" class="summernote-itinerary"><?= $itinerary->description; ?></div>
                 </div>
               </div>
           </div>
@@ -42,8 +51,16 @@
                   </div>
                 </div>
                 <input type="text" name="trip_itineraries[][name]" id="input-trip-name" class="form-control mb-3 form-control-sm" placeholder="Title">
+                {{-- max altitude --}}
+                <input type="text" id="input-trip-max-altitude" class="form-control mb-3 form-control-sm" placeholder="Title">
+                {{-- accomodation --}}
+                <input type="text" id="input-trip-accomodation" class="form-control mb-3 form-control-sm" placeholder="Title">
+                {{-- meals --}}
+                <input type="text" id="input-trip-meals" class="form-control mb-3 form-control-sm" placeholder="Title">
+                {{-- image --}}
+                <input type="file" id="input-trip-image" class="form-control mb-3 form-control-sm">
                 <div class="itinerary-description-block">
-                  <div id="summernote-itinerary-1" class="summernote"></div>
+                  <div id="summernote-itinerary-1" class="summernote-itinerary"></div>
                 </div>
               </div>
           </div>

@@ -63,6 +63,16 @@
                           <label>Description</label>
                           <div id="summernote-description" class="summernote"></div>
                       </div>
+
+                      <div class="form-group">
+                          <label>Tour Guide Description</label>
+                          <div id="summernote-tour-guide-description" class="summernote"></div>
+                      </div>
+
+                      <div class="form-group">
+                            <label>Tour Guide Image</label>
+                            <input type="file" id="tour-guide-image" class="form-control">
+                        </div>
                     </div>
                     {{-- end of general tab --}}
 
@@ -152,10 +162,20 @@ $(function() {
       var form = $(form);
       var formData = new FormData(form[0]);
       var description = form.find('#summernote-description').summernote('code');
+      var tour_guide_description = form.find('#summernote-tour-guide-description').summernote('code');
       formData.append('description', description);
+      formData.append('tour_guide_description', tour_guide_description);
       if (cropper) {
         formData.append('cropped_data', JSON.stringify(cropper.getData()));
       }
+
+            const fileInput = $('#tour-guide-image');
+            var file = fileInput[0].files[0];
+            if (!file || file == undefined) {
+                file = "";
+            }
+        formData.append('tour_guide_image_name', file);
+
 
       $.ajax({
           url: "{{ route('admin.destinations.store') }}",
@@ -167,7 +187,7 @@ $(function() {
           async: false,
           success: function(res) {
               if (res.status === 1) {
-                  location.href = '{{ route('admin.destinations.index') }}';
+                  location.href = '{{ route("admin.destinations.index") }}';
                   // form[0].reset();
                   // $('#cropper-image').attr('src', '{{ asset('img/default.gif') }}');
                   // if (cropped) {

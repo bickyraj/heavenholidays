@@ -74,15 +74,18 @@ class BannerController extends Controller
 
 	            // crop image
 	            $image->crop(round($cropped_data['width']), round($cropped_data['height']), round($cropped_data['x']), round($cropped_data['y']));
-
-	            Storage::put($path . $banner['id'] . '/' . $imageName, (string) $image->encode('jpg', $image_quality));
+                Storage::put($path . $banner['id'] . '/' . $imageName, (string) $image->encode('jpg', $image_quality));
+	            
+	            // large image
+                $image->fit(1680, 900);
+                Storage::put($path . $banner['id'] . '/large_' . $imageName, (string) $image->encode('jpg', $image_quality));
 
 	            // thumbnail image
 	            $image->fit(300, 100, function ($constraint) {
 	                $constraint->aspectRatio();
 	            });
-
-	            Storage::put($path . $banner['id'] . '/thumb_' . $imageName, (string) $image->encode('jpg', $image_quality));
+                Storage::put($path . $banner['id'] . '/thumb_' . $imageName, (string) $image->encode('jpg', $image_quality));
+                
 	            $status = 1;
 	        }
 	        $status = 1;
@@ -163,8 +166,11 @@ class BannerController extends Controller
 
 	            // crop image
 	            $image->crop(round($cropped_data['width']), round($cropped_data['height']), round($cropped_data['x']), round($cropped_data['y']));
-
-	            Storage::put($path . $banner['id'] . '/' . $imageName, (string) $image->encode('jpg', $image_quality));
+                Storage::put($path . $banner['id'] . '/' . $imageName, (string) $image->encode('jpg', $image_quality));
+	            
+	            // large image
+                $image->fit(1680, 900);
+                Storage::put($path . $banner['id'] . '/large_' . $imageName, (string) $image->encode('jpg', $image_quality));
 
 	            // thumbnail image
 	            $image->fit(300, 100, function ($constraint) {

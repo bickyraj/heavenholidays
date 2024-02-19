@@ -16,7 +16,6 @@ class TripReviewController extends Controller
     public function create()
     {
         $data['trips'] = Trip::where('status', 1)->get();
-        $reviews = \App\TripReview::latest()->limit(2)->published()->get();
         return view('front.reviews.create', $data);
     }
 

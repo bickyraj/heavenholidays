@@ -17,16 +17,8 @@
         </div>
 </section>
 
-<section class="pt-5">
+<section class="pt-10">
     <div class="container">
-        <div class="lim mb-4">
-            <p>
-                Lorem ipsum, dolor sit amet consectetur adipisicing elit. Dolor voluptas expedita aspernatur voluptates
-                laudantium natus deleniti nobis. Quos quibusdam hic perferendis incidunt dolorem inventore odit officiis impedit
-                optio, distinctio rerum praesentium quod fugiat ab a maiores similique eius, quia placeat? Vel sequi quo omnis?
-                Velit deleniti natus odio similique eius.
-            </p>
-        </div>
         <div class="mb-4" id="searchDiv">
             <div class="grid lg:grid-cols-3 gap-2">
                 <div class="col-lg-4">

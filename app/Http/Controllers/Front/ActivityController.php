@@ -8,13 +8,84 @@ use App\Activity;
 
 class ActivityController extends Controller
 {
-	public function show($slug)
-	{
-		$activity = Activity::where('slug', '=', $slug)->first();
-		$seo = $activity->seo;
-		$destinations = \App\Destination::select('id', 'name')->get();
-		$activities = \App\Activity::select('id', 'name')->get();
+    private $page_limit = 8;
 
-		return view('front.activities.show', compact('activity', 'destinations', 'activities', 'seo'));
-	}
+    public function index(Request $request)
+    {
+        if ($request->ajax()) {
+            $query = Activity::query();
+            $keyword = $request->keyword;
+            if (isset($keyword) && !empty($keyword)) {
+                $query->where('name', 'LIKE', '%' . $keyword . '%');
+            }
+            $activities = $query->where('status', '=', 1)->paginate($this->page_limit, ['*'], 'page', $request->page);
+            $html = "";
+            if (!empty($activities)) {
+                foreach ($activities as $activity) {
+                    $html .= view('front.elements.activity-card')->with(compact('activity'))->render();
+                }
+            }
+
+            return response()->json([
+                'data' => $html,
+                'success' => true,
+                'pagination' => [
+                    'current_page' => $activities->currentPage(),
+                    'next_page' => $activities->nextPageUrl() ? true : false,
+                    'total' => $activities->total()
+                ],
+                'message' => 'List fetched'
+            ]);
+        } else {
+            $block_3_trips = \App\Trip::where('block_3', 1)->latest()->get();
+            $activities = \App\Activity::where('status', '=', 1)->paginate($this->page_limit);
+            return view('front.activities.index', compact('activities', 'block_3_trips'));
+        }
+    }
+
+    public function search(Request $request)
+    {
+        $keyword = $request->keyword;
+        $activity_id = $request->act;
+        $price_sort = $request->price;
+        $query = Activity::query();
+        if (isset($keyword) && !empty($keyword)) {
+            $query->where('name', 'LIKE', '%' . $keyword . '%');
+        }
+
+        $activities = $query->where('status', '=', 1)->paginate($this->page_limit);
+        $html = "";
+        if (!empty($activities)) {
+            foreach ($activities as $activity) {
+                $html .= view('front.elements.activity-card')->with(compact('activity'))->render();
+            }
+        }
+
+        return response()->json([
+            'data' => $html,
+            'pagination' => [
+                'current_page' => $activities->currentPage(),
+                'next_page' => $activities->nextPageUrl() ? true : false,
+                'total' => $activities->total()
+            ],
+            'success' => true,
+            'message' => 'List fetched'
+        ]);
+    }
+
+    public function show($slug)
+    {
+        $activity = Activity::where('slug', '=', $slug)->first();
+        $seo = $activity->seo;
+        $destinations = \App\Destination::select('id', 'name')->get();
+        $activities = \App\Activity::select('id', 'name')->get();
+        $sub_activities = $activity->children;
+        $regions = \App\Region::whereHas('activities', function ($query) {
+            $query->where('activity_id', 1);
+        })->get();
+        $find_climbing_expedition_regions = \App\Region::whereHas('activities', function ($query) use ($activity) {
+            $query->where('activity_id', $activity->id);
+        })->get();
+        return view('front.activities.show', compact('activity', 'destinations', 'activities', 'seo', 'regions', 'sub_activities', 'find_climbing_expedition_regions'));
+    }
 }

@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Blog;
-use App\Seo;
 use Image;
+use App\Seo;
 use Illuminate\Support\Facades\Log;
 
 class BlogController extends Controller
@@ -30,7 +30,8 @@ class BlogController extends Controller
      */
     public function create()
     {
-        return view('admin.blogs.add');
+        $blogs = Blog::orderBy('name')->get();
+        return view('admin.blogs.add', compact('blogs'));
     }
 
     /**
@@ -53,6 +54,7 @@ class BlogController extends Controller
         $blog->description = $request->description;
         $blog->blog_date = $request->blog_date;
         $blog->slug = $this->create_slug_title($blog->name);
+        $blog->toc = $request->toc;
         $blog->status = 1;
 
         if ($request->hasFile('file')) {
@@ -68,6 +70,10 @@ class BlogController extends Controller
         }
 
         if ($blog->save()) {
+            // save seo
+            if ($request->seo) {
+                $this->createSeo($request->seo, $blog);
+            }
             // save image.
             if ($request->hasFile('file')) {
 
@@ -101,6 +107,12 @@ class BlogController extends Controller
 
                 $status = 1;
             }
+
+            // save similar trips to the similar_trips table
+            if ($request->similar_blogs) {
+                $blog->similar_blogs()->attach($request->similar_blogs);
+            }
+
             $status = 1;
             $msg = "Blog created successfully.";
             session()->flash('message', $msg);
@@ -131,8 +143,12 @@ class BlogController extends Controller
      */
     public function edit($id)
     {
-        $blog = Blog::find($id);
-        return view('admin.blogs.edit', compact('blog'));
+        $blog = Blog::with([
+            'similar_blogs',
+        ])->find($id);
+        $blogs = Blog::orderBy('name', 'ASC')->where('id', '!=', $id)->get();
+        $similar_blog_ids = $blog->similar_blogs->pluck('id')->toArray();
+        return view('admin.blogs.edit', compact('blog', 'similar_blog_ids', 'blogs'));
     }
 
     /**
@@ -156,6 +172,7 @@ class BlogController extends Controller
         $blog->description = $request->description;
         $blog->blog_date = $request->blog_date;
         $blog->slug = $this->create_slug_title($blog->name);
+        $blog->toc = $request->toc;
         $blog->status = 1;
 
         if ($request->hasFile('file')) {
@@ -243,6 +260,12 @@ class BlogController extends Controller
                 }
             }
 
+            // save similar trips to the similar_trips table
+            if ($request->similar_blogs) {
+                $blog->similar_blogs()->detach();
+                $blog->similar_blogs()->attach($request->similar_blogs);
+            }
+
             $status = 1;
             $msg = "Blog updated successfully.";
             session()->flash('message', $msg);
@@ -286,6 +309,46 @@ class BlogController extends Controller
         return response()->json([
             'data' => $blogs
         ]);
+    }
+
+    public function createSeo($request, $page)
+    {
+        $seo = new Seo;
+        $seo->meta_title = $request['meta_title'];
+        $seo->meta_keywords = $request['meta_keywords'];
+        $seo->canonical_url = $request['canonical_url'];
+        $seo->meta_description = $request['meta_description'];
+        $seo->seoable_id = $page->id;
+        $seo->seoable_type = "blog";
+
+        if ($seo->save()) {
+            if (isset($request['social_image']) && !empty($request['social_image'])) {
+                $social_image = $request['social_image'];
+                $socialImageName = $social_image->getClientOriginalName();
+                $socialImageFileSize = $social_image->getClientSize();
+                $socialImageType = $social_image->getClientOriginalExtension();
+                $socialImageNameUniqid = md5(microtime()) . '.' . $socialImageType;
+                $socialImageName = $socialImageNameUniqid;
+                $seo->social_image = $socialImageName;
+
+                $image_quality = 100;
+                if (($socialImageFileSize / 1000000) > 1) {
+                    $image_quality = 75;
+                }
+
+                $path = 'public/seos/';
+                $image = Image::make($social_image);
+
+                // store new image
+                Storage::put($path . $seo->id . '/' . $socialImageName, (string) $image->encode('jpg', $image_quality));
+                $file = $path . $seo->id . '/' . $socialImageName;
+
+                $seo->save();
+            }
+            return 1;
+        }
+
+        return 0;
     }
 
     public function updateSeo($request, $blog)

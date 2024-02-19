@@ -1,5 +1,5 @@
-<div class="p-4 rounded-lg bg-light lg:p-8 fade-in">
-    <h2 class="mb-4 text-2xl font-bold text-gray-600 font-display">
+<div class="p-2 rounded-lg bg-gradient lg:p-4">
+    <h2 class="mb-4 text-2xl uppercase font-display text-primary">
         <a href="{{ route('front.trips.show', ['slug' => $departure->trip->slug]) }}">
             <?= $departure->trip->name ?>
         </a>

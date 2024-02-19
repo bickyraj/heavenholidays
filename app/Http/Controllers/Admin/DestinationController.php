@@ -51,8 +51,19 @@ class DestinationController extends Controller
         $destination = new Destination;
         $destination->name = $request->name;
         $destination->description = $request->description;
+        $destination->tour_guide_description = $request->tour_guide_description;
         $destination->slug = $this->create_slug_title($destination->name);
         $destination->status = 1;
+
+        if ($request->hasFile('tour_guide_image_name')) {
+            $tour_guide_image_name = $request->tour_guide_image_name->getClientOriginalName();
+            $destination->map_original_file_name = $tour_guide_image_name;
+            $tourFileSize = $request->tour_guide_image_name->getClientSize();
+            $mapImageType = $request->tour_guide_image_name->getClientOriginalExtension();
+            $tour_guide_image_nameUniqid = md5($tour_guide_image_name . microtime()) . '.' . $mapImageType;
+            $tour_guide_image_name = $tour_guide_image_nameUniqid;
+            $destination->tour_guide_image_name = $tour_guide_image_nameUniqid;
+        }
 
         if ($request->hasFile('file')) {
             $imageName = $request->file->getClientOriginalName();
@@ -72,6 +83,29 @@ class DestinationController extends Controller
                 $this->createSeo($request->seo, $destination);
             }
 
+            // save tour guide.
+            if ($request->hasFile('tour_guide_image_name')) {
+
+                $image_quality = 100;
+
+                if (($tourFileSize / 1000000) > 1) {
+                    $image_quality = 75;
+                }
+
+                $path = 'public/destinations/';
+
+                $image = Image::make($request->tour_guide_image_name);
+
+                Storage::put($path . $destination['id'] . '/' . $tour_guide_image_name, (string) $image->encode('jpg', $image_quality));
+
+                $file = $path . $destination['id'] . '/' . $tour_guide_image_name;
+                if (!Storage::exists($file)) {
+                    $destination->tour_guide_image_name = "";
+                    $destination->save();
+                }
+            }
+
+
             // save image.
             if ($request->hasFile('file')) {
 
@@ -90,9 +124,13 @@ class DestinationController extends Controller
                 $image->crop(round($cropped_data['width']), round($cropped_data['height']), round($cropped_data['x']), round($cropped_data['y']));
 
                 Storage::put($path . $destination['id'] . '/' . $imageName, (string) $image->encode('jpg', $image_quality));
+                
+                // medium image
+                $image->fit(615, 462);
+                Storage::put($path . $destination['id'] . '/medium' . $imageName, (string) $image->encode('jpg', $image_quality));
 
                 // thumbnail image
-                $image->fit(300, 300, function ($constraint) {
+                $image->fit(360, 270, function ($constraint) {
                     $constraint->aspectRatio();
                 });
 
@@ -152,6 +190,7 @@ class DestinationController extends Controller
         $destination = Destination::find($request->id);
         $destination->name = $request->name;
         $destination->description = $request->description;
+        $destination->tour_guide_description = $request->tour_guide_description;
         $destination->slug = $this->create_slug_title($destination->name);
         $destination->status = 1;
 
@@ -167,15 +206,61 @@ class DestinationController extends Controller
             $destination->image_size = $imageSize;
         }
 
+        if ($request->hasFile('tour_guide_image_name')) {
+            $old_tour_guide_file_name = $destination->tour_guide_image_name;
+            $tourImageSize = $request->tour_guide_image_name->getClientSize();
+            $tourimageType = $request->tour_guide_image_name->getClientOriginalExtension();
+            $tourimageNameUniqid = md5(microtime()) . '.' . $tourimageType;
+            $tour_guide_image_name = $tourimageNameUniqid;
+
+            $destination->tour_guide_image_name = $tour_guide_image_name;
+        }
+
         if ($destination->save()) {
             // update seo
             $this->updateSeo($request->seo, $destination);
 
+            if ($request->hasFile('tour_guide_image_name')) {
+
+                $image_quality = 100;
+
+                if (($tourImageSize / 1000000) > 1) {
+                    $image_quality = 75;
+                }
+
+                $path = 'public/destinations/';
+
+                $image = Image::make($request->tour_guide_image_name);
+
+
+                // store new image
+                Storage::put($path . $destination['id'] . '/' . $tour_guide_image_name, (string) $image->encode('jpg', $image_quality));
+
+                // delete old image
+                if (isset($old_tour_guide_file_name) && !empty($old_tour_guide_file_name)) {
+                    Storage::delete($path . $destination['id'] . '/' . $old_tour_guide_file_name);
+                    $file = $path . $destination['id'] . '/' . $tour_guide_image_name;
+                    if (!Storage::exists($file)) {
+                        $destination->tour_guide_image_name = "";
+                        $destination->save();
+                    }
+                }
+
+            } else {
+                // check if trip has pdf file
+                if ($request->has_tour_guide_image == 0) {
+                    $path = 'public/destinations/';
+                    Storage::delete($path . $destination['id'] . '/' . $destination['tour_guide_image_name']);
+                    $destination->tour_guide_image_name = "";
+                    $destination->save();
+                }
+            }
+
             // save image.
             if ($request->hasFile('file')) {
 
-                $path = 'public/destinations/';
-                Storage::deleteDirectory($path . $destination->id);
+                // $path = 'public/destinations/';
+                // Storage::deleteDirectory($path . $destination->id);
 
                 $image_quality = 100;
 
@@ -190,11 +275,14 @@ class DestinationController extends Controller
 
                 // crop image
                 $image->crop(round($cropped_data['width']), round($cropped_data['height']), round($cropped_data['x']), round($cropped_data['y']));
-
                 Storage::put($path . $destination['id'] . '/' . $imageName, (string) $image->encode('jpg', $image_quality));
+                
+                // medium image
+                $image->fit(615, 462);
+                Storage::put($path . $destination['id'] . '/medium_' . $imageName, (string) $image->encode('jpg', $image_quality));
 
                 // thumbnail image
-                $image->fit(300, 300, function ($constraint) {
+                $image->fit(360, 270, function ($constraint) {
                     $constraint->aspectRatio();
                 });
 
@@ -207,7 +295,7 @@ class DestinationController extends Controller
                     $path = 'public/destinations/';
                     $image = Image::make(Storage::get('public/destinations/' . $destination->id . '/' . $destination->image_name));
 
-                    Storage::deleteDirectory($path . $destination->id);
+                    // Storage::deleteDirectory($path . $destination->id);
 
                     // crop image
                     $image->crop(round($cropped_data['width']), round($cropped_data['height']), round($cropped_data['x']), round($cropped_data['y']));
@@ -217,9 +305,13 @@ class DestinationController extends Controller
                     $imageNameUniqid = md5($destination->image_name . microtime()) . '.' . $ext;
 
                     Storage::put($path . $destination['id'] . '/' . $imageNameUniqid, (string) $image->encode('jpg', 100));
+                    
+                    // medium image
+                    $image->fit(615, 462);
+                    Storage::put($path . $destination['id'] . '/medium_' . $imageName, (string) $image->encode('jpg', $image_quality));
 
                     // thumbnail image
-                    $image->fit(300, 300, function ($constraint) {
+                    $image->fit(360, 270, function ($constraint) {
                         $constraint->aspectRatio();
                     });
 
@@ -314,7 +406,7 @@ class DestinationController extends Controller
 
         return 0;
     }
-    
+
     public function updateSeo($request, $destination)
     {
         if ($destination->seo) {

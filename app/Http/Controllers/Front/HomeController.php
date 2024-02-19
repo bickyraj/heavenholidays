@@ -20,14 +20,14 @@ class HomeController extends Controller
 {
     public function index()
     {
-        // $data['banners'] = \App\Trip::latest()->limit(5)->get();
-        $data['destinations'] = \App\Destination::orderBy('name')->select('id', 'name', 'slug', 'image_name')->get();
-        $data['activities'] = \App\Activity::orderBy('id')->select('id', 'name', 'slug', 'image_name')->get();
+        $data['banners'] = \App\Banner::all();
+        $data['destinations'] = \App\Destination::orderBy('id')->select('id', 'name', 'slug', 'image_name')->get();
+        $data['activities'] = \App\Activity::orderBy('id')->select('id', 'name', 'slug', 'image_name')->get()->filter(fn ($item) => $item->trips->count() > 0);
         $data['block_1_trips'] = \App\Trip::where('block_1', 1)->latest()->get();
         $data['block_2_trips'] = \App\Trip::where('block_2', 1)->latest()->get();
         $data['block_3_trips'] = \App\Trip::where('block_3', 1)->latest()->get();
         $data['reviews'] = \App\TripReview::latest()->limit(2)->published()->get();
-        $data['blogs'] = \App\Blog::latest()->limit(2)->get();
+        $data['blogs'] = \App\Blog::latest()->limit(3)->get();
         $data['why_chooses'] = \App\WhyChoose::latest()->limit(6)->get();
         $data['departures'] = TripDeparture::where([
             ['status', 1],
@@ -47,7 +47,7 @@ class HomeController extends Controller
     public function reviews()
     {
         $trips = \App\Trip::orderBy('name', 'asc')->select('id', 'name')->get();
-        $reviews = \App\TripReview::latest()->published()->paginate(10);
+        $reviews = \App\TripReview::latest()->published()->paginate(5);
         return view('front.reviews.index', compact('trips', 'reviews'));
     }
 
@@ -175,6 +175,23 @@ class HomeController extends Controller
             $payment['invoiceNo'] = $invoice->invoice_id;
             $payment['ref_id'] = $invoice->ref_id;
             //echo "Payment jose request \n ";
+
+            // Send Email
+            $request->merge([
+                'trip_name' => $trip->name,
+                'ip_address' => $request->ip()
+            ]);
+            try {
+                Mail::send('emails.common', ['body' => $request], function ($message) use ($request) {
+                    $message->to(Setting::get('email'));
+                    $message->from($request->email);
+                    $message->subject('Trip Booking');
+                });
+            } catch (\Exception $e) {
+                Log::info($e->getMessage());
+                return redirect()->back();
+            }
+
             $paymentObj = [
                 "order_no" => $payment['ref_id'],
                 "amount" => $payment['input_amount'],
@@ -186,6 +203,7 @@ class HomeController extends Controller
                     'RefID' => $payment['ref_id']
                 ],
             ];
+
             HblPayment::pay($paymentObj);
         } catch (\Throwable $th) {
             \Log::info($th->getMessage());
@@ -228,6 +246,22 @@ class HomeController extends Controller
             $payment['backend_url'] = route('home');
             $payment['invoiceNo'] = $invoice->invoice_id;
             $payment['ref_id'] = $invoice->ref_id;
+
+            // Send Email
+            $request->merge([
+                'ip_address' => $request->ip()
+            ]);
+            try {
+                Mail::send('emails.common', ['body' => $request], function ($message) use ($request) {
+                    $message->to(Setting::get('email'));
+                    $message->from($request->email);
+                    $message->subject('Payment from footer');
+                });
+            } catch (\Exception $e) {
+                Log::info($e->getMessage());
+                return redirect()->back();
+            }
+
             $paymentObj = [
                 "order_no" => $payment['ref_id'],
                 "amount" => $payment['input_amount'],
@@ -254,7 +288,7 @@ class HomeController extends Controller
         $payment['invoiceNo'] = $invoice->invoice_id;
         $payment['productDesc'] = $invoice->trip_name;
         $payment['price'] =
-        str_pad((float) $invoice->price * 100, 12, "0", STR_PAD_LEFT);
+            str_pad((float) $invoice->price * 100, 12, "0", STR_PAD_LEFT);
         $payment['currencyCode'] = "840";
         $payment['nonSecure'] = "N";
         $payment['hashValue'] = config('constants.payment_merchant_key');

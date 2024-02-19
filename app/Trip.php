@@ -11,6 +11,11 @@ class Trip extends Model
 
     protected $appends = ['difficulty_grade_value', 'imageUrl', 'thumbImageUrl', 'mediumImageUrl', 'mapImageUrl', 'link', 'galleryLink', 'pdf_link', 'trip_activity_type'];
 
+    public function getPeoplePriceRangeAttribute($value)
+    {
+        return json_decode($value, true);
+    }
+
     public function getDifficultyGradeValueAttribute()
     {
         $difficulty_grade = [
@@ -22,7 +27,7 @@ class Trip extends Model
         ];
 
         if ($this->difficulty_grade) {
-            return ucwords($difficulty_grade[$this->difficulty_grade]);
+            return strtoupper($difficulty_grade[$this->difficulty_grade]);
         } else {
             return "beginner";
         }
@@ -58,11 +63,6 @@ class Trip extends Model
         return $this->region()->first();
     }
 
-    public function destinations()
-    {
-        return $this->belongsToMany(Destination::class);
-    }
-
     public function activities()
     {
         return $this->belongsToMany(Activity::class);
@@ -91,6 +91,11 @@ class Trip extends Model
     public function trip_galleries()
     {
         return $this->hasMany(TripGallery::class);
+    }
+
+    public function trip_sliders()
+    {
+        return $this->hasMany(TripSlider::class);
     }
 
     public function getImageUrlAttribute()
@@ -164,6 +169,11 @@ class Trip extends Model
     public function trip_reviews()
     {
         return $this->hasMany('App\TripReview');
+    }
+
+    public function getReviewsCountAttribute()
+    {
+        return $this->trip_reviews()->count();
     }
 
     public function trip_faqs()

@@ -10,9 +10,11 @@ use App\TripInfo;
 use App\TripSeo;
 use App\TripIncludeExclude;
 use App\TripItinerary;
+Use App\TripSlider;
 use App\TripGallery;
 use Image;
 use Illuminate\Support\Facades\Log;
+use Mockery\Undefined;
 
 class TripController extends Controller
 {
@@ -75,6 +77,7 @@ class TripController extends Controller
         $trip->starting_point = $request->starting_point;
         $trip->ending_point = $request->ending_point;
         $trip->rating = $request->rating;
+        $trip->iframe = $request->iframe;
         $trip->show_status = $request->show_status;
         $trip->slug = $this->create_slug_title($trip->name);
         $trip->status = 1;
@@ -194,7 +197,7 @@ class TripController extends Controller
             // save trip seo exclude
             if (isset($request->trip_itineraries) && !empty($request->trip_itineraries)) {
                 $trip_itineraries = $request->trip_itineraries;
-                $save_trip_itineraries = $this->saveTripItineraries($trip, (array) $trip_itineraries);
+                $this->saveTripItineraries($trip, (array) $trip_itineraries);
             }
 
             $status = 1;
@@ -277,8 +280,11 @@ class TripController extends Controller
             'trip_info',
             'trip_include_exclude',
             'trip_seo',
-            'trip_itineraries',
+            'trip_itineraries' => function ($q) {
+                $q->orderBy('display_order', 'asc');
+            },
             'trip_galleries',
+            'trip_sliders',
             'similar_trips',
             'addon_trips'
         ])->find($id);
@@ -329,13 +335,12 @@ class TripController extends Controller
         $trip->starting_point = $request->starting_point;
         $trip->ending_point = $request->ending_point;
         $trip->rating = $request->rating;
+        $trip->iframe = $request->iframe;
         $trip->show_status = $request->show_status;
         $trip->slug = $this->create_slug_title($trip->name);
         $trip->status = 1;
         $trip->show_status = 0;
-        if ($request->show_status == "on") {
-            $trip->show_status = 1;
-        }
+
 
         if ($request->hasFile('map_file_name')) {
             $mapName = $request->map_file_name->getClientOriginalName();
@@ -360,6 +365,9 @@ class TripController extends Controller
 
         if ($trip->save()) {
             // save region to the trip_region table
+            if ($request->region_id == 0) {
+                $trip->region()->detach();
+            }
             if ($request->region_id) {
                 $trip->region()->detach();
                 $trip->region()->attach($request->region_id);
@@ -589,15 +597,89 @@ class TripController extends Controller
         $trip_itineraries = $request->trip_itineraries;
         $trip = Trip::where('id', '=', $request->id)->first();
 
-        if (isset($trip->trip_itineraries) && !empty($trip->trip_itineraries)) {
-            $trip->trip_itineraries()->delete();
-        }
+        // if (isset($trip->trip_itineraries) && !empty($trip->trip_itineraries)) {
+        //     $trip->trip_itineraries()->delete();
+        // }
 
-        $trip->trip_itineraries()->createMany($trip_itineraries);
+        $existing_trip_itineraries = $trip->trip_itineraries()->pluck('id')->toArray();
+        $updated_trip_itineraries = [];
+        foreach ($trip_itineraries as $trip_itinerary) {
+            if ($trip_itinerary['itinerary_id'] != "undefined") {
+                $itinerary = TripItinerary::find($trip_itinerary['itinerary_id']);
+                $updated_trip_itineraries[] = $trip_itinerary['itinerary_id'];
+            } else {
+                $itinerary = new TripItinerary();
+            }
+            $itinerary->trip_id = $trip->id;
+            $itinerary->name = $trip_itinerary['name'];
+            $itinerary->day = $trip_itinerary['day'];
+            $itinerary->display_order = $trip_itinerary['display_order'];
+            $itinerary->description = $trip_itinerary['description'];
+            $itinerary->max_altitude = $trip_itinerary['max_altitude'];
+            $itinerary->accomodation = $trip_itinerary['accomodation'];
+            $itinerary->meals = $trip_itinerary['meals'];
+
+            if (isset($trip_itinerary['image_name']) && !empty($trip_itinerary['image_name'])) {
+                // check if the itinerary already has an image.
+                if (!empty($itinerary->image_name)) {
+                    // delete existing image.
+                    Storage::delete('public/trips/' . $trip['id'] . "/itineraries/" . $itinerary->image_name);
+                }
+                $imageType = $trip_itinerary['image_name']->getClientOriginalExtension();
+                $imageName = md5(microtime()) . '.' . $imageType;
+                $itinerary->image_name = $imageName;
+                $image_quality = 100;
+                $imageFileSize = $trip_itinerary['image_name']->getClientSize();
+
+                if (($imageFileSize / 1000000) > 1) {
+                    $image_quality = 75;
+                }
+
+                $path = 'public/trips/' . $trip['id'] . "/itineraries/" . $imageName;
+
+                $image = Image::make($trip_itinerary['image_name']);
+
+                Storage::put($path, (string) $image->encode('jpg', $image_quality));
+            }
+            $itinerary->save();
+        }
+        // to be deleted itineraries
+        $difference = array_diff($existing_trip_itineraries, $updated_trip_itineraries);
+        $difference = array_values($difference);
+        for ($i=0; $i < count($difference); $i++) {
+            // delete the images from the itineraries first.
+            $diff_trip_itinerary = TripItinerary::find($difference[$i]);
+            if (!empty($diff_trip_itinerary->image_name)) {
+                // delete existing image.
+                Storage::delete('public/trips/' . $trip['id'] . "/itineraries/" . $diff_trip_itinerary->image_name);
+            }
+            $diff_trip_itinerary->delete();
+        }
 
         $status = 1;
         $msg = "Trip updated.";
         $http_status = 200;
+
+        return response()->json([
+            'status' => $status,
+            'message' => $msg
+        ], $http_status);
+    }
+
+    public function updateTripPriceRange(Request $request)
+    {
+        // save trip include exclude
+        $status = 0;
+        $msg = "";
+        $http_status = 404;
+        $trip = Trip::where('id', '=', $request->trip_id)->first();
+        $trip_price_range_json = json_encode($request->trip_price_range);
+        $trip->people_price_range = $trip_price_range_json;
+        if ($trip->save()) {
+            $msg = "Trip price range updated.";
+            $http_status = 200;
+            $status = 1;
+        }
 
         return response()->json([
             'status' => $status,
@@ -653,17 +735,16 @@ class TripController extends Controller
 
                 // crop image
                 $image->crop(round($cropped_data['width']), round($cropped_data['height']), round($cropped_data['x']), round($cropped_data['y']));
-
                 Storage::put($path . $gallery['trip_id'] . '/' . $imageName, (string) $image->encode('jpg', $image_quality));
 
                 // medium image
-                $image->fit(400, 200, function ($constraint) {
+                $image->fit(615, 462, function ($constraint) {
                     $constraint->aspectRatio();
                 });
                 Storage::put($path . $gallery['trip_id'] . '/medium_' . $imageName, (string) $image->encode('jpg', $image_quality));
 
                 // thumbnail image
-                $image->fit(200, 100, function ($constraint) {
+                $image->fit(360, 270, function ($constraint) {
                     $constraint->aspectRatio();
                 });
                 Storage::put($path . $gallery['trip_id'] . '/thumb_' . $imageName, (string) $image->encode('jpg', $image_quality));
@@ -716,11 +797,24 @@ class TripController extends Controller
         ]);
     }
 
-    public function tripList()
+    public function tripList(Request $request)
     {
-        $trips = Trip::all();
+        $query = Trip::query();
+        $keyword = $request['query']['generalSearch'] ?? "";
+        if (isset($keyword) && !empty($keyword)) {
+            $query->where([
+                ['name', 'LIKE', "%" . $keyword . "%"]
+            ]);
+        }
+        $trips = $query->select('id', 'name', 'slug', 'block_1', 'block_2', 'block_3')->paginate(10, ['id', 'name', 'slug', 'block_1', 'block_2', 'block_3'], 'page', $request->pagination['page'])->toArray();
         return response()->json([
-            'data' => $trips
+            'data' => $trips['data'],
+            'meta' => [
+                "page" => $trips['current_page'],
+                "pages" => $trips['last_page'],
+                "perpage" => $trips['per_page'],
+                "total" => $trips['total']
+            ],
         ]);
     }
 
@@ -870,45 +964,41 @@ class TripController extends Controller
             'message' => $message
         ]);
     }
-    
-     public function editSlider($sliderId)
+
+    public function editSlider($id)
     {
-        $slider = TripGallery::find($sliderId);
-        return view('admin.trips.trip_edit_slider', compact('slider'));
+        $slider = TripGallery::find($id);
+        return view('admin.trips.edit-slider', compact('slider'));
     }
 
-    public function updateSlider(Request $request)
+    public function updateTripGallery(Request $request)
     {
         $status = 0;
         $msg = "";
-        $gallery = TripGallery::find($request->id);
-        $gallery->alt_tag = $request->alt_tag;
-        $gallery->caption = $request->caption;
-        $gallery->status = 1;
+        $slider = TripGallery::find($request->id);
+        $slider->alt_tag = $request->alt_tag;
+        $slider->caption = $request->caption;
+        $slider->status = 1;
 
         if ($request->hasFile('file')) {
             $imageName = $request->file->getClientOriginalName();
-            $imageSize = $request->file->getClientSize();
             $imageType = $request->file->getClientOriginalExtension();
             $imageNameUniqid = md5($imageName . microtime()) . '.' . $imageType;
             $imageName = $imageNameUniqid;
 
-            $gallery->image_name = $imageName;
+            $slider->image_name = $imageName;
         }
 
-        if ($gallery->save()) {
+        if ($slider->save()) {
             // save image.
             if ($request->hasFile('file')) {
 
                 $path = 'public/trip-galleries/';
-                if (file_exists($path . $gallery->trip_id . "/" . $gallery->image_name)) {
-                    unlink($path . $gallery->trip_id . "/" . $gallery->image_name);
-                }
-                // Storage::deleteDirectory($path . $gallery->id);
+                // Storage::deleteDirectory($path . $slider->trip_id);
 
                 $image_quality = 100;
 
-                if (($gallery->image_size/1000000) > 1) {
+                if (($slider->image_size / 1000000) > 1) {
                     $image_quality = 75;
                 }
 
@@ -920,64 +1010,47 @@ class TripController extends Controller
                 // crop image
                 $image->crop(round($cropped_data['width']), round($cropped_data['height']), round($cropped_data['x']), round($cropped_data['y']));
 
-                Storage::put($path . $gallery['trip_id'] . '/' . $imageName, (string) $image->encode('jpg', $image_quality));
+                Storage::put($path . $slider['trip_id'] . '/' . $imageName, (string) $image->encode('jpg', $image_quality));
 
-                // medium image
+                // thumbnail image
                 $image->fit(400, 200, function ($constraint) {
                     $constraint->aspectRatio();
                 });
-                Storage::put($path . $gallery['trip_id'] . '/medium_' . $imageName, (string) $image->encode('jpg', $image_quality));
 
-                // thumbnail image
-                $image->fit(200, 100, function ($constraint) {
-                    $constraint->aspectRatio();
-                });
-
-                Storage::put($path . $gallery['trip_id'] . '/thumb_' . $imageName, (string) $image->encode('jpg', $image_quality));
+                Storage::put($path . $slider['trip_id'] . '/thumb_' . $imageName, (string) $image->encode('jpg', $image_quality));
                 $status = 1;
             } else {
                 if (isset($request->cropped_data) && !empty($request->cropped_data)) {
-                    $image_quality = 100;
-                    if (($gallery->image_size/1000000) > 1) {
-                        $image_quality = 75;
-                    }
                     $cropped_data = json_decode($request->cropped_data, true);
 
                     $path = 'public/trip-galleries/';
-                    $image = Image::make(Storage::get('public/trip-galleries/' . $gallery->id . '/' . $gallery->image_name));
+                    $image = Image::make(Storage::get('public/trip-galleries/' . $slider->trip_id . '/' . $slider->image_name));
 
-                    if (file_exists($path . $gallery->trip_id . "/" . $gallery->image_name)) {
-                        unlink($path . $gallery->trip_id . "/" . $gallery->image_name);
-                    }
+                    Storage::deleteDirectory($path . $slider->trip_id);
 
                     // crop image
                     $image->crop(round($cropped_data['width']), round($cropped_data['height']), round($cropped_data['x']), round($cropped_data['y']));
 
-                    $ext = pathinfo($gallery->image_name, PATHINFO_EXTENSION);
+                    $ext = pathinfo($slider->image_name, PATHINFO_EXTENSION);
 
-                    $imageNameUniqid = md5($gallery->image_name . microtime()) . '.' . $ext;
+                    $imageNameUniqid = md5($slider->image_name . microtime()) . '.' . $ext;
 
-                    Storage::put($path . $gallery['trip_id'] . '/' . $imageNameUniqid, (string) $image->encode('jpg', 100));
+                    Storage::put($path . $slider['trip_id'] . '/' . $imageNameUniqid, (string) $image->encode('jpg', 100));
 
-                    // medium image
+                    // thumbnail image
                     $image->fit(400, 200, function ($constraint) {
                         $constraint->aspectRatio();
                     });
-                    Storage::put($path . $gallery['trip_id'] . '/medium_' . $imageName, (string) $image->encode('jpg', $image_quality));
 
-                    // thumbnail image
-                    $image->fit(200, 100, function ($constraint) {
-                        $constraint->aspectRatio();
-                    });
-                    Storage::put($path . $gallery['trip_id'] . '/thumb_' . $imageNameUniqid, (string) $image->encode('jpg', 100));
+                    Storage::put($path . $slider['trip_id'] . '/thumb_' . $imageNameUniqid, (string) $image->encode('jpg', 100));
 
-                    $gallery->image_name = $imageNameUniqid;
-                    $gallery->save();
+                    $slider->image_name = $imageNameUniqid;
+                    $slider->save();
                 }
             }
 
             $status = 1;
-            $msg = "Trip Gallery updated successfully.";
+            $msg = "Gallery updated successfully.";
             session()->flash('message', $msg);
         }
 

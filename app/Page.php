@@ -17,7 +17,7 @@ class Page extends Model
     {
         return $this->morphMany('App\MenuItem', 'menu_itemable');
     }
-
+    
     public function getImageUrlAttribute()
     {
         if (isset($this->attributes['image_name']) && !empty($this->attributes['image_name'])) {

@@ -50,4 +50,9 @@ class Region extends Model
 	{
 	    return $this->morphOne('App\Seo', 'seoable');
 	}
+
+    public function trips()
+    {
+        return $this->belongsToMany(Trip::class, 'region_trip', 'region_id', 'trip_id');
+    }
 }

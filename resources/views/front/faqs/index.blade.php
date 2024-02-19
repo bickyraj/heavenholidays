@@ -2,7 +2,7 @@
 @section ('content')
     <!-- Hero -->
     <section class="hero hero-alt relative">
-        <img src="{{ asset('assets/front/img/hero.jpg') }}" alt="">
+        <img src="{{ asset('assets/front/img/hero.jpg') }}" alt="" style="max-height: 400px;">
         <div class="overlay absolute">
             <div class="container ">
                 <h1>Frequently Asked Questions</h1>

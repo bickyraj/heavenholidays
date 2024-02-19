@@ -2,7 +2,7 @@
 @section('content')
 <!-- Hero -->
 <section class="hero hero-alt relative">
-    <img src="{{ asset('assets/front/img/hero.jpg') }}" alt="" style="height: 100%;">
+    <img src="{{ asset('assets/front/img/team.jpg') }}" alt="" style="border-radius: 0px;height: 500px;">
     <div class="overlay absolute">
         <div class="container ">
             <h1>{{ $team->name }}</h1>
@@ -19,20 +19,23 @@
 </section>
 
 <section class="py-5">
-    <div class="container lg:grid grid-cols-3">
+    <div class="container">
 
-       
-        <div class="col-span-1" style="padding-top: 25px;">
-           <img class="img-fluid" src="{{ $team->imageUrl }}" alt="{{ $team->name }}" style="border: 5px solid #f3ad0f; border-radius: 50%;">  
-        </div>
-         <div class="col-span-2" style="padding: 25px;">
-           <h2 class="fs-xl text-primary" style="font-weight: bold; font-size: 33px;">{{ $team->name }}</h2>
-                    <p class="fs-lg" style="font-weight: bold;font-size: 23px;">{{ $team->position }}</p>
+        <div class="tour-details-section team-member">
+
+            <div class="row">
+                <div class="col-sm-4 col-md-3 col-lg-2">
+                    <div>
+                        <img class="img-fluid" src="{{ $team->imageUrl }}" alt="{{ $team->name }}" style="height: 349px; padding-top: 29px;">
+                    </div>
+                    <h2 class="fs-xl text-primary">{{ $team->name }}</h2>
+                    <p class="fs-lg">{{ $team->position }}</p>
                     <div class="lim">
                         <?= $team->description; ?>
-                    </div> 
+                    </div>
+                </div>
+            </div>
         </div>
-   
     </div>
 </section>
 @endsection

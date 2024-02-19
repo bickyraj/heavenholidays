@@ -1,10 +1,10 @@
 <!-- Nav -->
-<nav :class="{ show: mobilenavOpen, flex: true }">
-    <ul id="main-nav" class="absolute left-0 right-0 sm sm-simple top-full lg:static">
+<nav :class="{ show: mobilenavOpen }">
+    <ul id="main-nav" class="absolute sm sm-simple lg:static" style="top:100%;left:0;right:0">
         @if ($menus)
             @foreach ($menus as $menu)
                 <li>
-                    <a href="{!! $menu->link ? $menu->link : 'javascript:;' !!}" class="text-primary">{{ $menu->name }}</a>
+                    <a href="{!! $menu->link ? $menu->link : 'javascript:;' !!}" class="uppercase font-display text-primary">{{ $menu->name }}</a>
                     @if (iterator_count($menu->children))
                         @if ($menu->mega_menu)
                             @include('front.elements.mega_menu', ['menu' => $menu])

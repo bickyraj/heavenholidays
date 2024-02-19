@@ -34,7 +34,10 @@ class MenuItem extends Model
 	public function getLinkAttribute($value)
 	{
 		if (!$value) {
-			return $this['menu_itemable']['link'] ?? "";
+            if (isset($this['menu_itemable']) && !empty($this['menu_itemable'])) {
+                return $this['menu_itemable']['link'];
+            }
+            return "";
 		}
 
 		if (filter_var($value, FILTER_VALIDATE_URL)) {

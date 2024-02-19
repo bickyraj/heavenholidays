@@ -32,7 +32,7 @@
     <div class="container">
         <div class="grid lg:grid-cols-3 xl:grid-cols-4 gap-10">
             <div class="lg:col-span-2 xl:col-span-3">
-                <p></p>
+                <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nemo culpa necessitatibus commodi nisi ipsa quia velit, fuga rem accusantium odio quo et sit maxime magnam repellendus, eligendi laudantium dolore non?</p>
                 <div class="mb-8">
                     <form id="review-form" action="{{ route('front.reviews.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf

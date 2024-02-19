@@ -54,4 +54,9 @@ class Blog extends Model
     {
         return $this->morphOne('App\Seo', 'seoable');
     }
+
+    public function similar_blogs()
+    {
+        return $this->belongsToMany(Blog::class, 'similar_blogs', 'parent_id', 'blog_id');
+    }
 }

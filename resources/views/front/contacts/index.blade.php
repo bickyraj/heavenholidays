@@ -12,9 +12,9 @@ if (session()->has('error_message')) {
 @extends('layouts.front')
 @section('content')
     <!-- Hero -->
-    <section class="relative hero hero-alt">
-        <img src="{{ asset('assets/front/img/hero.jpg') }}" alt="">
-        <div class="absolute overlay">
+    <section class="hero hero-alt relative">
+        <img src="{{ asset('assets/front/img/hero.jpg') }}" alt="Haven Holidays Nepals">
+        <div class="overlay absolute">
             <div class="container ">
                 <h1 class="font-display upper">Contact Us</h1>
                 <div class="breadcrumb-wrapper">
@@ -28,18 +28,28 @@ if (session()->has('error_message')) {
             </div>
     </section>
 
-    <section class="py-20">
-        <div class="max-w-5xl px-4 mx-auto">
-            <div class="grid gap-10 lg:grid-cols-3">
+    {{-- <iframe
+        src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d28275.51054552614!2d85.322707!3d27.641892!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb18e330f2565d%3A0x21fd1082f7db1e89!2sNature%20Trail!5e0!3m2!1sen!2sus!4v1686463950166!5m2!1sen!2sus"
+        width="100%" height="500" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe> --}}
+
+    <section class="py-10">
+        <div class="container">
+            <div class="grid lg:grid-cols-3 gap-10">
                 <div class="lg:col-span-2">
-                    <p class="mb-8">Feel free to contact us.</p>
+                    {{-- <p>Haven Holidays Nepal located, right here in Kathmandu, the capital city of Nepal, to serve you twenty-four hours a day, seven days a week. We are located just 20 minutes drive from
+                        Kathmandu International Airport to Thamel. Thamel is tourist hub of Nepal. While driving from airport to Haven Holidays Nepal, if you driving via Durbar Marg, follow Tridevi Marg
+                        road, and as soon as you reach centre of Thamel (Kathmandu Guest House) follow further 2 minutes drive north where you could see Haven Holidays Nepal Office Board. It lies just
+                        before Manang Hotel, situation (1st floor) between Manang and Marsyangdi Hotel on the left side. If you walking from Kathmandu Guest house, it takes just 3 minutes to reach Haven
+                        Holidays Nepal office.</p> --}}
+                    <p>Tell us about your interest and we will respond your query within 12 hours !
+                    </p>
                     <div class="mb-8">
                         <form id="captcha-form" action="{{ route('front.contact.store') }}" method="POST">
                             @csrf
-                            <div class="mb-4 form-group">
+                            <div class="form-group mb-4">
                                 <label for="name" class="text-sm">Name</label>
                                 {{-- <div class="flex">
-                                <div class="flex items-center justify-center px-2 bg-primary">
+                                <div class="flex justify-center items-center bg-primary px-2">
                                     <svg class="w-4 h-4 text-white">
                                         <use xlink:href="{{ asset('assets/front/img/sprite.svg') }}#users" />
                                     </svg>
@@ -47,10 +57,10 @@ if (session()->has('error_message')) {
                                 <input type="text" name="name" required class="form-control" id="name" placeholder="Name">
                                 {{-- </div> --}}
                             </div>
-                            <div class="mb-4 form-group">
+                            <div class="form-group mb-4">
                                 <label for="email" class="text-sm">E-mail</label>
                                 {{-- <div class="flex">
-                                <div class="flex items-center justify-center px-2 bg-primary">
+                                <div class="flex justify-center items-center bg-primary px-2">
                                     <svg class="w-4 h-4 text-white">
                                         <use xlink:href="{{ asset('assets/front/img/sprite.svg') }}#mail" />
                                     </svg>
@@ -58,33 +68,33 @@ if (session()->has('error_message')) {
                                 <input type="email" name="email" required class="form-control" id="email" placeholder="Email">
                                 {{-- </div> --}}
                             </div>
-                            <div class="mb-4 form-group">
+                            <div class="form-group mb-4">
                                 <label for="country" class="text-sm">Country</label>
                                 {{-- <div class="flex">
-                                <div class="flex items-center justify-center px-2 bg-primary">
+                                <div class="flex justify-center items-center bg-primary px-2">
                                     <svg class="w-4 h-4 text-white">
                                         <use xlink:href="{{ asset('assets/front/img/sprite.svg') }}#flag" />
                                     </svg>
                                 </div> --}}
-                                <input type="text" name="" id="country" required name="country" class="form-control" list="countries" placeholder="Country">
+                                <input name="" id="country" required name="country" class="form-control" list="countries" placeholder="Country">
                                 {{-- </div> --}}
                             </div>
-                            <div class="mb-4 form-group">
+                            <div class="form-group mb-4">
                                 <label for="phone" class="text-sm">Phone Number</label>
                                 {{-- <div class="flex">
-                                <div class="flex items-center justify-center px-2 bg-primary">
+                                <div class="flex justify-center items-center bg-primary px-2">
                                     <svg class="w-4 h-4 text-white">
                                         <use xlink:href="{{ asset('assets/front/img/sprite.svg') }}#phone" />
                                     </svg>
                                 </div> --}}
-                                <input type="tel" name="phone" required class="block form-control" id="phone" placeholder="Phone No.">
+                                <input type="tel" name="phone" required class="form-control block" id="phone" placeholder="Phone No.">
                                 {{-- </div> --}}
                             </div>
-                            <div class="mb-4 form-group">
+                            <div class="form-group mb-4">
                                 <label for="" class="text-sm">Message</label>
-                                <textarea class="block form-control" required name="message" id="message" rows="5" placeholder="Message"></textarea>
+                                <textarea class="form-control block" required name="message" id="message" rows="5" placeholder="Message"></textarea>
                             </div>
-                            <div class="mb-4 form-group">
+                            <div class="form-group mb-4">
                                 <input type="hidden" id="recaptcha" name="g-recaptcha-response">
                                 @include('front.elements.recaptcha')
                                 <button type="submit" class="btn btn-primary">Send</button>
@@ -335,10 +345,10 @@ if (session()->has('error_message')) {
                     </datalist>
                 </div>
                 <aside>
-                    <div class="px-2 py-10 text-white experts-card bg-primary">
-
-                        <div class="flex mb-2 experts-phone">
-                            <a href="tel:+977 9851046017" class="flex aic">
+                    <div class="experts-card bg-primary px-4 py-10 text-white">
+                        <b class="text-lg">Haven Holidays Pvt. Ltd.</b>
+                        <div class="experts-phone flex mb-2">
+                            <a href="" class="flex aic">
                                 <svg class="w-6 h-6 mr-2">
                                     <use xlink:href="{{ asset('assets/front/img/sprite.svg') }}#locationmarker" />
                                 </svg>
@@ -346,15 +356,23 @@ if (session()->has('error_message')) {
                                 {{ Setting::get('address') ?? '' }}
                             </a>
                         </div>
-                        <div class="flex mb-2 experts-phone">
-                            <a href="tel:{{ Setting::get('moblie1') ?? '' }}" class="flex aic">
+                        <div class="experts-phone flex mb-2">
+                            <a href="tel:{{ Setting::get('mobile1') ?? '' }}" class="flex aic">
                                 <svg class="w-6 h-6 mr-2">
                                     <use xlink:href="{{ asset('assets/front/img/sprite.svg') }}#phone" />
                                 </svg>
-                                {{ Setting::get('mobile1') ?? '' }} </br> {{ Setting::get('telephone') }}
+                                {{ Setting::get('mobile1') ?? '' }}
                             </a>
                         </div>
-                        <div class="flex mb-3 experts-phone">
+                        <div class="experts-phone flex mb-2">
+                            <a href="tel:{{ Setting::get('telephone') ?? '' }}" class="flex aic">
+                                <svg class="w-6 h-6 mr-2">
+                                    <use xlink:href="{{ asset('assets/front/img/sprite.svg') }}#phone" />
+                                </svg>
+                                {{ Setting::get('telephone') ?? '' }}
+                            </a>
+                        </div>
+                        <div class="experts-phone flex mb-3">
                             <a href="mailto:{{ Setting::get('email') ?? '' }}" class="flex aic">
                                 <svg class="w-6 h-6 mr-2">
                                     <use xlink:href="{{ asset('assets/front/img/sprite.svg') }}#mail" />
@@ -363,28 +381,28 @@ if (session()->has('error_message')) {
                             </a>
                         </div>
                     </div>
-                    <div class="flex p-2 mb-8 bg-light justify-evenly">
-                        <a href="{{ Setting::get('facebook') ?? '' }}" class="text-primary hover:text-accent">
+                    <div class="mb-8 p-2 bg-light flex justify-between">
+                        <a href="{{ Setting::get('facebook') ?? '' }}" class="text-primary hover:text-accent mr-1">
                             <svg class="w-6 h-6">
                                 <use xlink:href="{{ asset('assets/front/img/sprite.svg') }}#facebookmessenger" />
                             </svg>
                         </a>
-                        <a href="{{ Setting::get('viber') ?? '' }}" class="text-primary hover:text-accent">
+                        <a href="{{ Setting::get('viber') ?? '' }}" class="text-primary hover:text-accent mr-1">
                             <svg class="w-6 h-6">
                                 <use xlink:href="{{ asset('assets/front/img/sprite.svg') }}#viber" />
                             </svg>
                         </a>
-                        <a href="{{ Setting::get('whatsapp') ?? '' }}" class="text-primary hover:text-accent">
+                        <a href="{{ Setting::get('whatsapp') ?? '' }}" class="text-primary hover:text-accent mr-1">
                             <svg class="w-6 h-6">
                                 <use xlink:href="{{ asset('assets/front/img/sprite.svg') }}#whatsapp" />
                             </svg>
                         </a>
-                        <a href="{{ Setting::get('skype') ?? '' }}" class="text-primary hover:text-accent">
+                        <a href="{{ Setting::get('skype') ?? '' }}" class="text-primary hover:text-accent mr-1">
                             <svg class="w-6 h-6">
                                 <use xlink:href="{{ asset('assets/front/img/sprite.svg') }}#skype" />
                             </svg>
                         </a>
-                        <a href="{{ Setting::get('weixin') ?? '' }}" class="text-primary hover:text-accent">
+                        <a href="{{ Setting::get('weixin') ?? '' }}" class="text-primary hover:text-accent mr-1">
                             <svg class="w-6 h-6">
                                 <use xlink:href="{{ asset('assets/front/img/sprite.svg') }}#weixin" />
                             </svg>
@@ -394,9 +412,6 @@ if (session()->has('error_message')) {
             </div>
         </div>
     </section>
-    <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2069.3093003719027!2d85.30936063521463!3d27.716724785988067!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb18fd3742435b%3A0x452c43fb1ab8544b!2sThird%20Eye%20Systems%20P.%20Ltd.!5e0!3m2!1sen!2snp!4v1675238753579!5m2!1sen!2snp"
-        width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
 @endsection
 @push('scripts')
     <script type="text/javascript">
