@@ -200,7 +200,7 @@
         </div>
     </div>
      @include('front.elements.scroll-to-top')
-    @include('front.elements.mobile-bottom-navigation')
+    {{-- @include('front.elements.mobile-bottom-navigation') --}}
 </footer><!-- Footer -->
 @push('scripts')
     <script type="text/javascript">

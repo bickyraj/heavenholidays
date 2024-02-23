@@ -56,7 +56,51 @@ if (session()->has('error_message')) {
             </div>
     </section>
 
-    <section class="py-20" x-data="{ noOfTravellers: 1, rate: {{ isset($trip->offer_price) && !empty($trip->offer_price) ? $trip->offer_price : $trip->cost }}, paymentType: 'half' }">
+    <script>
+        const price_ranges = @json($price_ranges);
+        function calculatePayment(noOfTravellers, rate, paymentType) {
+            const price = parseFloat(calculateTotalPrice(noOfTravellers, rate).replace(/,/g, ''));
+            const factor = (paymentType === 'half')? 0.25: 1;
+            return (price * factor).toLocaleString();
+        }
+        function calculateRate(noOfTravellers, rate) {
+            let totalPrice = 0;
+            Object.entries(price_ranges).forEach(([key, range]) => {
+                if (noOfTravellers >= range.from && noOfTravellers <= range.to) {
+                    totalPrice = parseFloat(range.price);
+                }
+            });
+            if(totalPrice === 0) {
+                totalPrice = parseFloat(rate);
+            }
+            return totalPrice.toLocaleString();
+        }
+
+        function calculateTotalPrice(noOfTravellers, rate) {
+            let totalPrice = 0
+            Object.entries(price_ranges).forEach(([key, range]) => {
+                if (noOfTravellers >= range.from && noOfTravellers <= range.to) {
+                    totalPrice = noOfTravellers * parseFloat(range.price);
+                }
+            });
+            if(totalPrice === 0) {
+                totalPrice = noOfTravellers * parseFloat(rate);
+            }
+            return totalPrice.toLocaleString();
+        }
+    </script>
+
+    <section class="py-20" x-data="{ noOfTravellers: 1, rate: {{ isset($trip->offer_price) && !empty($trip->offer_price) ? $trip->offer_price : $trip->cost }}, paymentType: 'half', price_ranges: {{json_encode($price_ranges)}},
+        calculateTotalPrice: function() {
+            return calculateTotalPrice(this.noOfTravellers, this.rate);
+        },
+        calculateRate: function() {
+            return calculateRate(this.noOfTravellers, this.rate);
+        },
+        calculatePayment: function() {
+            return calculatePayment(this.noOfTravellers, this.rate, this.paymentType);
+        }
+     }">
         <div class="container">
             <div class="grid gap-10 lg:grid-cols-3 xl:grid-cols-4 xl:gap-3">
                 <div class="lg:col-span-2 xl:col-span-3">
@@ -149,12 +193,12 @@ if (session()->has('error_message')) {
                         <div class="mt-4 card-body">
                             <p class="flex justify-between"><span>Duration:</span>{{ $trip->duration }} days</p>
                             <p class="flex justify-between"><span>No of Travellers:</span><span><span x-text="noOfTravellers"></span> people</span></p>
-                            <p class="flex justify-between"><span>Rate:</span><span>USD <span x-text="rate.toLocaleString()"></span></span></p>
+                            <p class="flex justify-between"><span>Rate:</span><span>USD <span x-text="calculateRate()"></span></span></p>
                             <hr>
-                            <p class="flex justify-between"><span>Total amount:</span><span class="font-bold text-primary">USD <span x-text="(noOfTravellers * rate).toLocaleString()"></span></span></p>
+                            <p class="flex justify-between"><span>Total amount:</span><span class="font-bold text-primary">USD <span x-text="calculateTotalPrice()"></span></span></p>
 
                             <p class="flex justify-between"><span>Payable Now:</span><span class="font-bold text-primary">USD <span
-                                        x-text="(noOfTravellers * rate * ((paymentType === 'half')? 0.25: 1)).toLocaleString()"></span></span></p>
+                                        x-text="calculatePayment()"></span></span></p>
 
                         </div>
                     </div>

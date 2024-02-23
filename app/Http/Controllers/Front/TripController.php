@@ -52,7 +52,7 @@ class TripController extends Controller
 
         $why_choose_us = \App\WhyChoose::select('id', 'title')->latest()->get();
         $blogs = \App\Blog::select('id', 'name', 'slug')->latest()->limit(5)->get();
-        if (count($trip->people_price_range) > 0) {
+        if ($trip->people_price_range != null && count($trip->people_price_range) > 0) {
             $isGroupDiscountsShown = true;
         } else {
             $isGroupDiscountsShown = false;
@@ -63,8 +63,9 @@ class TripController extends Controller
     public function booking($slug)
     {
         $trip = Trip::where('slug', '=', $slug)->first();
+        $price_ranges = $trip->people_price_range;
 
-        return view('front.trips.booking', compact('trip'));
+        return view('front.trips.booking', compact('trip', 'price_ranges'));
     }
 
     public function departureBooking($slug, $departureId)
